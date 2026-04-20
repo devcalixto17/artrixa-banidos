@@ -52,6 +52,7 @@ export function BanidosTable() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [records, setRecords] = useState<BanRecord[]>([]);
   const [search, setSearch] = useState("");
+  const [serverFilter, setServerFilter] = useState("");
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -140,14 +141,17 @@ export function BanidosTable() {
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
+    const serverTerm = serverFilter.trim().toLowerCase();
     if (!term) return records;
 
     return records.filter((item) => {
+      const serverMatch = !serverTerm || item.server?.toLowerCase().includes(serverTerm);
       return (
-        item.player_name?.toLowerCase().includes(term) || item.steam_id?.toLowerCase().includes(term)
+        serverMatch &&
+        (item.player_name?.toLowerCase().includes(term) || item.steam_id?.toLowerCase().includes(term))
       );
     });
-  }, [records, search]);
+  }, [records, search, serverFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
@@ -181,6 +185,17 @@ export function BanidosTable() {
             placeholder="Buscar por player ou steamid"
             className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none ring-ring transition focus:ring-2"
             aria-label="Buscar por nome ou Steam ID"
+          />
+          <input
+            type="search"
+            value={serverFilter}
+            onChange={(event) => {
+              setServerFilter(event.target.value);
+              setPage(1);
+            }}
+            placeholder="Filtrar por servidor"
+            className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none ring-ring transition focus:ring-2"
+            aria-label="Filtrar por servidor"
           />
           <button
             type="button"
