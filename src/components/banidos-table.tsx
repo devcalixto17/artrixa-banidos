@@ -168,11 +168,13 @@ export function BanidosTable() {
   }, [filtered, page]);
 
   return (
-    <section className="panel overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
+    <section className="panel overflow-hidden border-primary/40 bg-card/90 shadow-2xl shadow-primary/20">
+      <div className="flex flex-col gap-4 border-b border-border/80 p-5 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-lg font-bold uppercase tracking-wide">Lista de Banidos</h2>
-          <p className="text-xs text-muted-foreground">Atualização automática em tempo real + refresh a cada 15s</p>
+          <h2 className="text-2xl font-bold uppercase tracking-[0.16em] text-foreground" style={{ fontFamily: '"Orbitron", "Exo 2", sans-serif' }}>
+            Lista de Banidos
+          </h2>
+          <p className="text-sm text-muted-foreground">Atualização automática em tempo real + refresh a cada 15s</p>
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -184,7 +186,7 @@ export function BanidosTable() {
               setPage(1);
             }}
             placeholder="Buscar por player ou steamid"
-            className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none ring-ring transition focus:ring-2"
+            className="h-11 rounded-xl border border-input bg-background/80 px-4 text-base outline-none ring-ring transition focus:ring-2"
             aria-label="Buscar por nome ou Steam ID"
           />
           <input
@@ -195,7 +197,7 @@ export function BanidosTable() {
               setPage(1);
             }}
             placeholder="Filtrar por servidor"
-            className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none ring-ring transition focus:ring-2"
+            className="h-11 rounded-xl border border-input bg-background/80 px-4 text-base outline-none ring-ring transition focus:ring-2"
             aria-label="Filtrar por servidor"
           />
           <button
@@ -219,48 +221,48 @@ export function BanidosTable() {
         </div>
       </div>
 
-      {selected && (
-        <div className="border-b border-border bg-muted/20 p-4">
+       {selected && (
+         <div className="border-b border-border/80 bg-gradient-to-r from-secondary/30 via-card to-accent/10 p-5">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Detalhes do banimento #{selected.id}</h3>
+             <h3 className="text-lg font-bold uppercase tracking-[0.12em] text-foreground" style={{ fontFamily: '"Orbitron", "Exo 2", sans-serif' }}>Detalhes do banimento #{selected.id}</h3>
             <button type="button" className="action-button" onClick={() => setSelected(null)}>
               Fechar detalhes
             </button>
           </div>
 
-          <div className="grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Player:</span> {selected.player_name || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Steam ID:</span> {selected.steam_id || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">IP player:</span> {selected.player_ip || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Servidor:</span> {selected.server || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Admin:</span> {selected.banned_by || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Steam Admin:</span> {selected.admin_steamid || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">IP Admin:</span> {selected.admin_ip || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Tipo:</span> {selected.ban_type || "-"}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Data do ban:</span> {formatDate(selected.ban_date)}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Unban:</span> {formatDate(selected.unban_time)}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Duração:</span> {formatDuration(selected.ban_date, selected.unban_time)}</div>
-            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Criado em:</span> {formatDate(selected.created_at)}</div>
-            <div className="rounded-lg border border-border bg-card p-2 sm:col-span-2 lg:col-span-4"><span className="text-muted-foreground">Motivo:</span> {selected.reason || `Tipo: ${selected.ban_type}`}</div>
+           <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Player:</span> {selected.player_name || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Steam ID:</span> {selected.steam_id || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">IP player:</span> {selected.player_ip || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Servidor:</span> {selected.server || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Admin:</span> {selected.banned_by || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Steam Admin:</span> {selected.admin_steamid || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">IP Admin:</span> {selected.admin_ip || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Tipo:</span> {selected.ban_type || "-"}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Data do ban:</span> {formatDate(selected.ban_date)}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Unban:</span> {formatDate(selected.unban_time)}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Duração:</span> {formatDuration(selected.ban_date, selected.unban_time)}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Criado em:</span> {formatDate(selected.created_at)}</div>
+             <div className="rounded-xl border border-border bg-card/80 p-3 sm:col-span-2 lg:col-span-4"><span className="text-sm font-semibold text-muted-foreground">Motivo:</span> {selected.reason || `Tipo: ${selected.ban_type}`}</div>
           </div>
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+        <table className="min-w-full text-base">
+          <thead className="bg-gradient-to-r from-secondary/50 via-card to-accent/20 text-left text-sm uppercase tracking-[0.15em] text-muted-foreground">
             <tr>
-              <th className="px-4 py-3">ID</th>
-              <th className="px-4 py-3">Nome do player</th>
-              <th className="px-4 py-3">Steam ID</th>
-              <th className="px-4 py-3">Servidor</th>
-              <th className="px-4 py-3 text-right">Ações</th>
+              <th className="px-5 py-4">ID</th>
+              <th className="px-5 py-4">Nome do player</th>
+              <th className="px-5 py-4">Steam ID</th>
+              <th className="px-5 py-4">Servidor</th>
+              <th className="px-5 py-4 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td className="px-4 py-6 text-muted-foreground" colSpan={5}>
+                <td className="px-5 py-8 text-muted-foreground" colSpan={5}>
                   Carregando banidos...
                 </td>
               </tr>
@@ -268,7 +270,7 @@ export function BanidosTable() {
 
             {!loading && errorMessage && (
               <tr>
-                <td className="px-4 py-6 text-destructive" colSpan={5}>
+                <td className="px-5 py-8 text-destructive" colSpan={5}>
                   {errorMessage}
                 </td>
               </tr>
@@ -276,7 +278,7 @@ export function BanidosTable() {
 
             {!loading && !errorMessage && paged.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-muted-foreground" colSpan={5}>
+                <td className="px-5 py-8 text-muted-foreground" colSpan={5}>
                   Nenhum jogador banido encontrado.
                 </td>
               </tr>
@@ -285,12 +287,12 @@ export function BanidosTable() {
             {!loading &&
               !errorMessage &&
               paged.map((ban) => (
-                <tr key={ban.id} className="border-t border-border/70">
-                  <td className="px-4 py-3 font-semibold">#{ban.id}</td>
-                  <td className="px-4 py-3">{ban.player_name}</td>
-                  <td className="px-4 py-3">{ban.steam_id || "-"}</td>
-                  <td className="px-4 py-3">{ban.server || "-"}</td>
-                  <td className="px-4 py-3 text-right">
+                <tr key={ban.id} className="border-t border-border/70 transition-colors hover:bg-muted/20">
+                  <td className="px-5 py-4 text-lg font-bold text-primary">#{ban.id}</td>
+                  <td className="px-5 py-4 text-base font-semibold">{ban.player_name}</td>
+                  <td className="px-5 py-4 text-base">{ban.steam_id || "-"}</td>
+                  <td className="px-5 py-4 text-base">{ban.server || "-"}</td>
+                  <td className="px-5 py-4 text-right">
                     <button type="button" className="action-button" onClick={() => setSelected(ban)}>
                       Detalhes
                     </button>
@@ -301,7 +303,7 @@ export function BanidosTable() {
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t border-border p-4 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between border-t border-border p-5 text-sm text-muted-foreground">
         <span>
           Página {page} de {totalPages}
         </span>
