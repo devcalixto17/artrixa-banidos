@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BanDetailsModal } from "./ban-details-modal";
-import { BANS_TABLE, isSupabaseConfigured, supabase, type BanRecord } from "../lib/supabase";
+import { getSupabaseClient, getSupabaseConfig, type BanRecord } from "../lib/supabase";
 
 const PAGE_SIZE = 10;
 
@@ -16,16 +16,20 @@ export function BanidosTable() {
   const [sortField, setSortField] = useState<SortField>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selected, setSelected] = useState<BanRecord | null>(null);
+  const [configVersion, setConfigVersion] = useState(0);
 
   const fetchBans = async () => {
-    if (!isSupabaseConfigured) {
+    const config = getSupabaseConfig();
+    const supabase = getSupabaseClient();
+
+    if (!config.isConfigured || !supabase) {
       setErrorMessage("Configuração do Supabase ausente. Preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
       setLoading(false);
       return;
     }
 
     const { data, error } = await supabase
-      .from(BANS_TABLE)
+      .from(config.table)
       .select("id, player_name, steam_id, server, reason, banned_by, ban_date, ban_duration")
       .order(sortField, { ascending: sortDirection === "asc" });
 
@@ -43,10 +47,13 @@ export function BanidosTable() {
   useEffect(() => {
     setLoading(true);
     void fetchBans();
-  }, [sortField, sortDirection]);
+  }, [sortField, sortDirection, configVersion]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
+    const config = getSupabaseConfig();
+    const supabase = getSupabaseClient();
+
+    if (!config.isConfigured || !supabase) {
       return;
     }
 
@@ -61,7 +68,7 @@ export function BanidosTable() {
         {
           event: "*",
           schema: "public",
-          table: BANS_TABLE,
+          table: config.table,
         },
         () => {
           void fetchBans();
@@ -72,6 +79,17 @@ export function BanidosTable() {
     return () => {
       window.clearInterval(interval);
       void supabase.removeChannel(channel);
+    };
+  }, [configVersion]);
+
+  useEffect(() => {
+    const syncConfig = () => setConfigVersion((prev) => prev + 1);
+    window.addEventListener("storage", syncConfig);
+    window.addEventListener("supabase-config-updated", syncConfig);
+
+    return () => {
+      window.removeEventListener("storage", syncConfig);
+      window.removeEventListener("supabase-config-updated", syncConfig);
     };
   }, []);
 
