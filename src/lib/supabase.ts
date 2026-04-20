@@ -16,7 +16,7 @@ export function getSupabaseConfig() {
 
   const url = import.meta.env.VITE_SUPABASE_URL || browserUrl || "";
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || browserAnon || "";
-  const table = import.meta.env.VITE_SUPABASE_BANS_TABLE || browserTable || "banidos";
+  const table = import.meta.env.VITE_SUPABASE_BANS_TABLE || browserTable || "banishments";
 
   return {
     url,
@@ -48,7 +48,7 @@ export function saveSupabaseConfig(url: string, anonKey: string, table: string) 
 
   localStorage.setItem(STORAGE_KEYS.url, url.trim());
   localStorage.setItem(STORAGE_KEYS.anon, anonKey.trim());
-  localStorage.setItem(STORAGE_KEYS.table, table.trim() || "banidos");
+  localStorage.setItem(STORAGE_KEYS.table, table.trim() || "banishments");
   window.dispatchEvent(new Event("supabase-config-updated"));
 }
 
@@ -67,11 +67,16 @@ export function clearSupabaseConfig() {
 
 export type BanRecord = {
   id: number;
+  ban_type: string;
   player_name: string;
-  steam_id: string;
-  server: string;
+  steam_id: string | null;
+  player_ip: string | null;
+  server: string | null;
   reason: string | null;
   banned_by: string | null;
+  admin_steamid: string | null;
+  admin_ip: string | null;
   ban_date: string | null;
-  ban_duration: string | null;
+  unban_time: string | null;
+  created_at: string | null;
 };

@@ -39,7 +39,7 @@ export function SupabaseConfigCard() {
           <input
             value={table}
             onChange={(e) => setTable(e.target.value)}
-            placeholder="banidos"
+            placeholder="banishments"
             className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none ring-ring focus:ring-2"
           />
         </label>
@@ -63,7 +63,7 @@ export function SupabaseConfigCard() {
             clearSupabaseConfig();
             setUrl("");
             setAnonKey("");
-            setTable("banidos");
+            setTable("banishments");
             setMessage("Conexão limpa.");
           }}
         >
