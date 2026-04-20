@@ -142,13 +142,14 @@ export function BanidosTable() {
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const serverTerm = serverFilter.trim().toLowerCase();
-    if (!term) return records;
 
     return records.filter((item) => {
       const serverMatch = !serverTerm || item.server?.toLowerCase().includes(serverTerm);
+      const searchMatch =
+        !term || item.player_name?.toLowerCase().includes(term) || item.steam_id?.toLowerCase().includes(term);
       return (
         serverMatch &&
-        (item.player_name?.toLowerCase().includes(term) || item.steam_id?.toLowerCase().includes(term))
+        searchMatch
       );
     });
   }, [records, search, serverFilter]);
