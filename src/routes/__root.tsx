@@ -38,6 +38,10 @@ export const Route = createRootRoute({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Painel de Banidos CS 1.6" },
+      { name: "twitter:description", content: "Consulta moderna de banidos com suporte e booster para servidores de CS 1.6." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ea1d7cf1-7ac4-4852-af92-ae753f03291f/id-preview-9bc4b82e--c1fd40d8-df71-4335-b212-83af109cf510.lovable.app-1776653881928.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ea1d7cf1-7ac4-4852-af92-ae753f03291f/id-preview-9bc4b82e--c1fd40d8-df71-4335-b212-83af109cf510.lovable.app-1776653881928.png" },
     ],
     links: [
       {
