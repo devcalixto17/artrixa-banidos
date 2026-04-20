@@ -6,6 +6,12 @@ const STORAGE_KEYS = {
   table: "supabase_bans_table",
 } as const;
 
+const DEFAULT_SUPABASE_CONFIG = {
+  url: "https://qnaklovyildylnqxrgvu.supabase.co",
+  anonKey: "sb_publishable_z17cdJ5U_Y1SeBfc-eJB8g_L7xMXN3p",
+  table: "banishments",
+} as const;
+
 let cachedClient: ReturnType<typeof createClient> | null = null;
 let cachedSignature = "";
 
@@ -14,9 +20,9 @@ export function getSupabaseConfig() {
   const browserAnon = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.anon) : null;
   const browserTable = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.table) : null;
 
-  const url = import.meta.env.VITE_SUPABASE_URL || browserUrl || "";
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || browserAnon || "";
-  const table = import.meta.env.VITE_SUPABASE_BANS_TABLE || browserTable || "banishments";
+  const url = import.meta.env.VITE_SUPABASE_URL || browserUrl || DEFAULT_SUPABASE_CONFIG.url;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || browserAnon || DEFAULT_SUPABASE_CONFIG.anonKey;
+  const table = import.meta.env.VITE_SUPABASE_BANS_TABLE || browserTable || DEFAULT_SUPABASE_CONFIG.table;
 
   return {
     url,
