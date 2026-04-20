@@ -7,6 +7,40 @@ const PAGE_SIZE = 10;
 type SortField = "id" | "ban_date";
 type SortDirection = "asc" | "desc";
 
+function formatDuration(banDate: string | null, unbanTime: string | null) {
+  if (!unbanTime) return "Permanente";
+  if (!banDate) return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
+
+  const diffMs = new Date(unbanTime).getTime() - new Date(banDate).getTime();
+  if (Number.isNaN(diffMs) || diffMs <= 0) {
+    return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
+  }
+
+  const minutes = Math.floor(diffMs / 60000);
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+  return `${days}d ${hours}h ${mins}m`;
+}
+
+function mapBanRecord(raw: Record<string, unknown>): BanRecord {
+  return {
+    id: Number(raw.id ?? 0),
+    ban_type: String(raw.ban_type ?? ""),
+    player_name: String(raw.player_name ?? "-"),
+    steam_id: raw.player_steamid ? String(raw.player_steamid) : null,
+    player_ip: raw.player_ip ? String(raw.player_ip) : null,
+    server: raw.server_name ? String(raw.server_name) : null,
+    reason: raw.reason ? String(raw.reason) : null,
+    banned_by: raw.admin_name ? String(raw.admin_name) : null,
+    admin_steamid: raw.admin_steamid ? String(raw.admin_steamid) : null,
+    admin_ip: raw.admin_ip ? String(raw.admin_ip) : null,
+    ban_date: raw.ban_time ? String(raw.ban_time) : null,
+    unban_time: raw.unban_time ? String(raw.unban_time) : null,
+    created_at: raw.created_at ? String(raw.created_at) : null,
+  };
+}
+
 export function BanidosTable() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -28,10 +62,14 @@ export function BanidosTable() {
       return;
     }
 
+    const sortColumn = sortField === "ban_date" ? "ban_time" : "id";
+
     const { data, error } = await supabase
       .from(config.table)
-      .select("id, player_name, steam_id, server, reason, banned_by, ban_date, ban_duration")
-      .order(sortField, { ascending: sortDirection === "asc" });
+      .select(
+        "id, ban_type, player_name, player_steamid, player_ip, ban_time, unban_time, admin_name, admin_steamid, admin_ip, reason, server_name, created_at",
+      )
+      .order(sortColumn, { ascending: sortDirection === "asc" });
 
     if (error) {
       setErrorMessage(`Erro ao carregar banidos: ${error.message}`);
@@ -39,7 +77,8 @@ export function BanidosTable() {
       return;
     }
 
-    setRecords((data as BanRecord[]) || []);
+    const mapped = ((data as Record<string, unknown>[] | null) ?? []).map(mapBanRecord);
+    setRecords(mapped);
     setErrorMessage(null);
     setLoading(false);
   };
@@ -133,7 +172,7 @@ export function BanidosTable() {
               setSearch(event.target.value);
               setPage(1);
             }}
-            placeholder="Buscar por player ou steam_id"
+            placeholder="Buscar por player ou steamid"
             className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none ring-ring transition focus:ring-2"
             aria-label="Buscar por nome ou Steam ID"
           />
@@ -200,8 +239,8 @@ export function BanidosTable() {
                 <tr key={ban.id} className="border-t border-border/70">
                   <td className="px-4 py-3 font-semibold">#{ban.id}</td>
                   <td className="px-4 py-3">{ban.player_name}</td>
-                  <td className="px-4 py-3">{ban.steam_id}</td>
-                  <td className="px-4 py-3">{ban.server}</td>
+                  <td className="px-4 py-3">{ban.steam_id || "-"}</td>
+                  <td className="px-4 py-3">{ban.server || "-"}</td>
                   <td className="px-4 py-3 text-right">
                     <button type="button" className="action-button" onClick={() => setSelected(ban)}>
                       Detalhes
@@ -237,7 +276,12 @@ export function BanidosTable() {
         </div>
       </div>
 
-      {selected && <BanDetailsModal ban={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <BanDetailsModal
+          ban={{ ...selected, reason: selected.reason || `Tipo: ${selected.ban_type}` }}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </section>
   );
 }
