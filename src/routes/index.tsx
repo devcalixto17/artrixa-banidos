@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BanidosTable } from "../components/banidos-table";
 import { SiteShell } from "../components/site-shell";
+import { SupabaseConfigCard } from "../components/supabase-config-card";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,6 +27,7 @@ function Index() {
       title="BANIDOS"
       subtitle="Painel oficial de banimentos com consulta rápida para servidores de Counter-Strike 1.6"
     >
+      <SupabaseConfigCard />
       <BanidosTable />
     </SiteShell>
   );
