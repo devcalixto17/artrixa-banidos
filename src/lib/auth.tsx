@@ -24,9 +24,11 @@ async function loadProfile(userId: string) {
     return { displayName: null, roles: [] as AppRole[] };
   }
 
+  const client = supabase as any;
+
   const [profileResult, rolesResult] = await Promise.all([
-    supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
-    supabase.from("user_roles").select("role").eq("user_id", userId),
+    client.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
+    client.from("user_roles").select("role").eq("user_id", userId),
   ]);
 
   const roles = ((rolesResult.data as Array<{ role: string }> | null) ?? [])
@@ -101,6 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return "Configure a conexão com Supabase antes de cadastrar.";
     }
 
+    const client = supabase as any;
+
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -114,10 +118,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user?.id) {
-      await supabase.from("profiles").upsert({ id: data.user.id, display_name: nextDisplayName.trim() || null });
+      await client.from("profiles").upsert({ id: data.user.id, display_name: nextDisplayName.trim() || null });
 
       if (data.user.identities && data.user.identities.length > 0) {
-        await supabase.from("user_roles").upsert({ user_id: data.user.id, role: "usuario" }, { onConflict: "user_id,role" });
+        await client
+          .from("user_roles")
+          .upsert({ user_id: data.user.id, role: "usuario" }, { onConflict: "user_id,role" });
       }
     }
 
