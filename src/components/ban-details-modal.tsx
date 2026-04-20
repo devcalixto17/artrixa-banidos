@@ -19,6 +19,20 @@ function DetailItem({ label, value }: DetailItemProps) {
   );
 }
 
+function getBanDurationLabel(banDate: string | null, unbanTime: string | null) {
+  if (!unbanTime) return "Permanente";
+  if (!banDate) return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
+
+  const diffMs = new Date(unbanTime).getTime() - new Date(banDate).getTime();
+  if (Number.isNaN(diffMs) || diffMs <= 0) return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
+
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  return `${days}d ${hours}h ${minutes}m`;
+}
+
 export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
   return (
     <div
@@ -41,10 +55,14 @@ export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
         <div className="grid gap-3 sm:grid-cols-2">
           <DetailItem label="Player" value={ban.player_name || "-"} />
           <DetailItem label="Steam ID" value={ban.steam_id || "-"} />
+          <DetailItem label="IP do player" value={ban.player_ip || "-"} />
           <DetailItem label="Servidor" value={ban.server || "-"} />
           <DetailItem label="Admin" value={ban.banned_by || "-"} />
+          <DetailItem label="Steam ID admin" value={ban.admin_steamid || "-"} />
+          <DetailItem label="IP admin" value={ban.admin_ip || "-"} />
+          <DetailItem label="Tipo" value={ban.ban_type || "-"} />
           <DetailItem label="Data" value={ban.ban_date ? new Date(ban.ban_date).toLocaleString("pt-BR") : "-"} />
-          <DetailItem label="Duração" value={ban.ban_duration || "Permanente"} />
+          <DetailItem label="Duração" value={getBanDurationLabel(ban.ban_date, ban.unban_time)} />
           <div className="sm:col-span-2">
             <DetailItem label="Motivo" value={ban.reason || "Sem motivo informado"} />
           </div>
