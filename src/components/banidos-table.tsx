@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { BanDetailsModal } from "./ban-details-modal";
 import { getSupabaseClient, getSupabaseConfig, type BanRecord } from "../lib/supabase";
 
 const PAGE_SIZE = 10;
@@ -21,6 +20,13 @@ function formatDuration(banDate: string | null, unbanTime: string | null) {
   const hours = Math.floor((minutes % 1440) / 60);
   const mins = minutes % 60;
   return `${days}d ${hours}h ${mins}m`;
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("pt-BR");
 }
 
 function mapBanRecord(raw: Record<string, unknown>): BanRecord {
@@ -197,6 +203,33 @@ export function BanidosTable() {
         </div>
       </div>
 
+      {selected && (
+        <div className="border-b border-border bg-muted/20 p-4">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Detalhes do banimento #{selected.id}</h3>
+            <button type="button" className="action-button" onClick={() => setSelected(null)}>
+              Fechar detalhes
+            </button>
+          </div>
+
+          <div className="grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Player:</span> {selected.player_name || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Steam ID:</span> {selected.steam_id || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">IP player:</span> {selected.player_ip || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Servidor:</span> {selected.server || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Admin:</span> {selected.banned_by || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Steam Admin:</span> {selected.admin_steamid || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">IP Admin:</span> {selected.admin_ip || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Tipo:</span> {selected.ban_type || "-"}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Data do ban:</span> {formatDate(selected.ban_date)}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Unban:</span> {formatDate(selected.unban_time)}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Duração:</span> {formatDuration(selected.ban_date, selected.unban_time)}</div>
+            <div className="rounded-lg border border-border bg-card p-2"><span className="text-muted-foreground">Criado em:</span> {formatDate(selected.created_at)}</div>
+            <div className="rounded-lg border border-border bg-card p-2 sm:col-span-2 lg:col-span-4"><span className="text-muted-foreground">Motivo:</span> {selected.reason || `Tipo: ${selected.ban_type}`}</div>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -276,12 +309,6 @@ export function BanidosTable() {
         </div>
       </div>
 
-      {selected && (
-        <BanDetailsModal
-          ban={{ ...selected, reason: selected.reason || `Tipo: ${selected.ban_type}` }}
-          onClose={() => setSelected(null)}
-        />
-      )}
     </section>
   );
 }
