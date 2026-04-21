@@ -292,6 +292,21 @@ function BoosterPage() {
                       </p>
                     </div>
                   </div>
+
+                  <div className="mt-3 border-t border-border/70 pt-3">
+                    <p className="mb-2 text-xs text-muted-foreground">Jogadores online</p>
+                    {status?.playersOnline?.length ? (
+                      <ul className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {status.playersOnline.map((playerName, index) => (
+                          <li key={`${server.id}-player-${index}`} className="text-sm text-foreground">
+                            {playerName}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Nenhum jogador listado no momento.</p>
+                    )}
+                  </div>
                 </article>
               );
             })
