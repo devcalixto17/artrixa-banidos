@@ -105,48 +105,38 @@ function BoosterPage() {
     setStatuses((prev) => {
       const next = { ...prev };
       const now = new Date().toISOString();
-      for (const item of results) {
-        if (item.status !== "fulfilled") {
-          const failedServer = currentServers.find((server) => server.id === (item as PromiseRejectedResult & { value?: { serverId?: string } }).value?.serverId);
-          if (failedServer) {
-            next[failedServer.id] = {
-              name: failedServer.label,
-              ip: failedServer.address.split(":")[0] ?? null,
-              port: Number(failedServer.address.split(":")[1]) || null,
-              status: "offline",
-              map: null,
-              players: 0,
-              maxPlayers: null,
-              playersOnline: [],
-              playersSource: "fallback",
-              country: null,
-              updatedAt: now,
-            };
-          }
-          continue;
+
+      const offlineFallback = (server: BoosterServer): BoosterLiveStatus => {
+        const [ipPart, portPart] = server.address.split(":");
+        return {
+          name: server.label,
+          ip: ipPart ?? null,
+          port: Number(portPart) || null,
+          status: "offline",
+          map: null,
+          players: 0,
+          maxPlayers: null,
+          playersOnline: [],
+          playersSource: "fallback",
+          country: null,
+          updatedAt: now,
+        };
+      };
+
+      results.forEach((item, index) => {
+        const server = currentServers[index];
+        if (!server) {
+          return;
         }
 
-        if (item.value.status.ok) {
+        if (item.status === "fulfilled" && item.value.status.ok) {
           next[item.value.serverId] = item.value.status.data;
-        } else {
-          const fallbackServer = currentServers.find((server) => server.id === item.value.serverId);
-          if (fallbackServer) {
-            next[fallbackServer.id] = {
-              name: fallbackServer.label,
-              ip: fallbackServer.address.split(":")[0] ?? null,
-              port: Number(fallbackServer.address.split(":")[1]) || null,
-              status: "offline",
-              map: null,
-              players: 0,
-              maxPlayers: null,
-              playersOnline: [],
-              playersSource: "fallback",
-              country: null,
-              updatedAt: now,
-            };
-          }
+          return;
         }
-      }
+
+        next[server.id] = offlineFallback(server);
+      });
+
       return next;
     });
   };
