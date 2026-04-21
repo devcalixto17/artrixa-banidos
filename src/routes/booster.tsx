@@ -154,13 +154,6 @@ function BoosterPage() {
 
           if (item.status === "fulfilled" && item.value.status.ok) {
             const incoming = item.value.status.data;
-            const previous = next[item.value.serverId];
-
-            const isWeakOfflineSample =
-              incoming.status === "offline" &&
-              previous?.status === "online" &&
-              (incoming.players ?? 0) === 0 &&
-              incoming.playersOnline.length === 0;
 
             const resolvedServerId =
               item.value.status.ok && "resolvedServerId" in item.value.status
@@ -177,47 +170,11 @@ function BoosterPage() {
               });
             }
 
-            if (isWeakOfflineSample && previous) {
-              next[item.value.serverId] = {
-                ...previous,
-                updatedAt: incoming.updatedAt,
-              };
-            } else if (previous) {
-              const shouldReusePreviousPlayers =
-                incoming.status === "online" &&
-                incoming.playersOnline.length === 0 &&
-                (incoming.players ?? 0) > 0;
-
-              next[item.value.serverId] = {
-                ...incoming,
-                name: incoming.name || previous.name,
-                ip: incoming.ip ?? previous.ip,
-                port: incoming.port ?? previous.port,
-                map: incoming.map ?? previous.map,
-                players:
-                  typeof incoming.players === "number"
-                    ? incoming.players
-                    : previous.players,
-                maxPlayers: incoming.maxPlayers ?? previous.maxPlayers,
-                playersOnline:
-                  incoming.playersOnline.length > 0
-                    ? incoming.playersOnline
-                    : shouldReusePreviousPlayers
-                      ? previous.playersOnline
-                      : [],
-                playersSource:
-                  incoming.playersOnline.length > 0
-                    ? incoming.playersSource
-                    : shouldReusePreviousPlayers
-                      ? previous.playersSource
-                      : incoming.playersSource,
-                country: incoming.country ?? previous.country,
-              };
-            } else {
-              next[item.value.serverId] = incoming;
-            }
+            next[item.value.serverId] = incoming;
             return;
           }
+
+          delete next[server.id];
 
           const serverLabel = server.label;
           if (item.status === "fulfilled") {
