@@ -3,7 +3,7 @@ import { SiteShell } from "../components/site-shell";
 import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../lib/supabase";
 import { useAuth } from "../lib/auth";
-import { getServerStatus, type BoosterLiveStatus } from "../lib/booster.functions";
+import { getServerStatus, type BoosterLiveStatus, type BoosterStatusResponse } from "../lib/booster.functions";
 import flagBR from "../assets/flag-br.png";
 import flagUS from "../assets/flag-us.png";
 import steamIcon from "../assets/steam-icon.png";
@@ -99,7 +99,18 @@ function BoosterPage() {
   const refreshStatuses = async (currentServers: BoosterServer[]) => {
     const results = await Promise.allSettled(
       currentServers.map(async (server) => {
-        const status = await getServerStatus({ data: { address: server.address, game: server.game } });
+        let status: BoosterStatusResponse = { ok: false, message: "Falha ao consultar fonte de status" };
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          try {
+            const attemptStatus = await getServerStatus({ data: { address: server.address, game: server.game } });
+            status = attemptStatus;
+            if (attemptStatus.ok) {
+              break;
+            }
+          } catch {
+            status = { ok: false, message: "Falha de rede ao consultar status" };
+          }
+        }
         return { serverId: server.id, status };
       }),
     );
@@ -186,20 +197,6 @@ function BoosterPage() {
 
     void refreshStatuses(servers);
   }, [servers]);
-
-  useEffect(() => {
-    if (!servers.length || Object.keys(statuses).length > 0) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setStatusNotice((prev) =>
-        prev ?? "Falha ao consultar a fonte de status no momento; mantendo os dados anteriores quando disponíveis.",
-      );
-    }, 8000);
-
-    return () => window.clearTimeout(timeout);
-  }, [servers, statuses]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
