@@ -41,6 +41,7 @@ function mapServerRow(raw: Record<string, unknown>): BoosterServer {
 
 function BoosterPage() {
   const supabase = getSupabaseClient();
+  const client = supabase as any;
   const { loading: authLoading, user, hasRole } = useAuth();
   const isFounder = hasRole("fundador");
 
@@ -59,7 +60,7 @@ function BoosterPage() {
       return;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("booster_servers")
       .select("id, label, address, game")
       .eq("active", true)
@@ -129,7 +130,7 @@ function BoosterPage() {
       return;
     }
 
-    const { error } = await supabase.from("booster_servers").insert({
+    const { error } = await client.from("booster_servers").insert({
       label,
       address,
       game: gameInput.trim() || "cs",
@@ -153,7 +154,7 @@ function BoosterPage() {
       return;
     }
 
-    const { error } = await supabase.from("booster_servers").delete().eq("id", serverId);
+    const { error } = await client.from("booster_servers").delete().eq("id", serverId);
     if (error) {
       setMessage(`Erro ao remover servidor: ${error.message}`);
       return;
