@@ -83,7 +83,7 @@ async function fetchServerById(serverId: string, headers: HeadersInit): Promise<
 export const getServerStatus = async ({
   data,
 }: {
-  data: { address: string; game: string };
+  data: { address: string; game: string; serverId?: string };
 }): Promise<BoosterStatusResponse> => {
   try {
     const parsed = serverLookupInput.safeParse(data);

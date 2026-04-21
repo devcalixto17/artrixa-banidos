@@ -154,13 +154,18 @@ function BoosterPage() {
               (incoming.players ?? 0) === 0 &&
               incoming.playersOnline.length === 0;
 
-            if (item.value.status.resolvedServerId) {
+            const resolvedServerId =
+              item.value.status.ok && "resolvedServerId" in item.value.status
+                ? item.value.status.resolvedServerId
+                : null;
+
+            if (resolvedServerId) {
               setServerIdByAddress((prev) => {
-                if (prev[server.address] === item.value.status.resolvedServerId) {
+                if (prev[server.address] === resolvedServerId) {
                   return prev;
                 }
 
-                return { ...prev, [server.address]: item.value.status.resolvedServerId };
+                return { ...prev, [server.address]: resolvedServerId };
               });
             }
 
