@@ -3,7 +3,7 @@ import { SiteShell } from "../components/site-shell";
 import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "../lib/supabase";
 import { useAuth } from "../lib/auth";
-import { getServerStatus, type BoosterLiveStatus, type BoosterStatusResponse } from "../lib/booster.functions";
+import { getServerStatus, type BoosterLiveStatus, type BoosterStatusResponse } from "../lib/booster-status";
 import flagBR from "../assets/flag-br.png";
 import flagUS from "../assets/flag-us.png";
 import steamIcon from "../assets/steam-icon.png";
@@ -504,7 +504,7 @@ function BoosterPage() {
                         <p className="mb-2 text-xs text-muted-foreground">Jogadores online</p>
                         {status?.playersOnline?.length ? (
                           <ul className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
-                            {status.playersOnline.map((playerName, index) => (
+                            {status.playersOnline.map((playerName: string, index: number) => (
                               <li key={`${server.id}-player-${index}`} className="text-sm text-foreground">
                                 {playerName}
                               </li>
