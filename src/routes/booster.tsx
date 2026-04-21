@@ -104,24 +104,6 @@ function BoosterPage() {
 
     setStatuses((prev) => {
       const next = { ...prev };
-      const now = new Date().toISOString();
-
-      const offlineFallback = (server: BoosterServer): BoosterLiveStatus => {
-        const [ipPart, portPart] = server.address.split(":");
-        return {
-          name: server.label,
-          ip: ipPart ?? null,
-          port: Number(portPart) || null,
-          status: "offline",
-          map: null,
-          players: 0,
-          maxPlayers: null,
-          playersOnline: [],
-          playersSource: "fallback",
-          country: null,
-          updatedAt: now,
-        };
-      };
 
       results.forEach((item, index) => {
         const server = currentServers[index];
@@ -133,8 +115,6 @@ function BoosterPage() {
           next[item.value.serverId] = item.value.status.data;
           return;
         }
-
-        next[server.id] = offlineFallback(server);
       });
 
       return next;
@@ -151,13 +131,6 @@ function BoosterPage() {
     }
 
     void refreshStatuses(servers);
-    const interval = window.setInterval(() => {
-      void refreshStatuses(servers);
-    }, 15000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
   }, [servers]);
 
   useEffect(() => {
@@ -237,7 +210,7 @@ function BoosterPage() {
           <div className="text-muted-foreground">
             Total: <span className="font-semibold text-foreground">{servers.length}</span> servidores • Online: <span className="font-semibold text-foreground">{onlineCount}</span>
           </div>
-          <div className="text-xs text-muted-foreground">Refresh automático a cada 15s</div>
+          <div className="text-xs text-muted-foreground">Status atualizado ao carregar a página</div>
         </div>
 
         {message && <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted-foreground">{message}</div>}
