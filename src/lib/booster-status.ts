@@ -133,7 +133,6 @@ export const getServerStatus = async ({
     const queryAttempts = [
       { search: normalizedAddress, includeGame: true },
       { search: normalizedAddress, includeGame: false },
-      { search: expectedIp, includeGame: true },
     ].filter((attempt) => attempt.search.length > 0);
 
     const uniqueAttempts = Array.from(
