@@ -8,7 +8,7 @@ type EditableTextProps = {
 };
 
 export function EditableText({ entry, className, as = "span" }: EditableTextProps) {
-  const { registerEntry, getConfig } = useTextCustomization();
+  const { registerEntry, getConfig, selectionMode, openEditorFor } = useTextCustomization();
   const config = getConfig(entry);
 
   useEffect(() => {
@@ -20,6 +20,7 @@ export function EditableText({ entry, className, as = "span" }: EditableTextProp
   return (
     <Component
       className={className}
+      onClick={selectionMode ? () => openEditorFor(entry.id) : undefined}
       style={{
         color: config.color,
         fontSize: `${config.size}px`,
@@ -30,7 +31,11 @@ export function EditableText({ entry, className, as = "span" }: EditableTextProp
         textShadow: config.glow
           ? `0 0 ${config.glowIntensity}px ${config.glowColor}, 0 0 ${Math.max(8, config.glowIntensity / 2)}px ${config.glowColor}`
           : "none",
+        cursor: selectionMode ? "crosshair" : undefined,
+        outline: selectionMode ? "1px dashed var(--color-primary)" : undefined,
+        outlineOffset: selectionMode ? "4px" : undefined,
       }}
+      title={selectionMode ? `Clique para editar: ${entry.label}` : undefined}
     >
       {config.text}
     </Component>
