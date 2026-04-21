@@ -11,6 +11,8 @@ export function FounderTextEditor() {
   const isFounder = hasRole("fundador");
   const [draft, setDraft] = useState<ReturnType<typeof getConfig> | null>(null);
   const [originalDraft, setOriginalDraft] = useState<ReturnType<typeof getConfig> | null>(null);
+  const [history, setHistory] = useState<Array<ReturnType<typeof getConfig>>>([]);
+  const [historyIndex, setHistoryIndex] = useState(0);
 
   const selectedEntry = useMemo(() => {
     if (!entries.length) return null;
@@ -24,10 +26,14 @@ export function FounderTextEditor() {
     if (!config || !editingEntryId) {
       setDraft(null);
       setOriginalDraft(null);
+      setHistory([]);
+      setHistoryIndex(0);
       return;
     }
     setDraft(config);
     setOriginalDraft(config);
+    setHistory([config]);
+    setHistoryIndex(0);
   }, [config, editingEntryId]);
 
   const applyDraftChange = (next: Partial<ReturnType<typeof getConfig>>) => {
@@ -41,10 +47,50 @@ export function FounderTextEditor() {
       }
 
       const merged = { ...prev, ...next };
+      if (JSON.stringify(merged) === JSON.stringify(prev)) {
+        return prev;
+      }
+
+      setHistory((prevHistory) => {
+        const trimmed = prevHistory.slice(0, historyIndex + 1);
+        return [...trimmed, merged];
+      });
+      setHistoryIndex((prevIndex) => prevIndex + 1);
       updateEntry(selectedEntry.id, merged);
       return merged;
     });
   };
+
+  const undoLastChange = () => {
+    if (!selectedEntry || historyIndex <= 0) {
+      return;
+    }
+
+    const previous = history[historyIndex - 1];
+    if (!previous) {
+      return;
+    }
+
+    setHistoryIndex((prev) => Math.max(0, prev - 1));
+    setDraft(previous);
+    updateEntry(selectedEntry.id, previous);
+  };
+
+  useEffect(() => {
+    if (!editingEntryId) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        undoLastChange();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [editingEntryId, historyIndex, history, selectedEntry]);
 
   const closeModal = () => {
     setDraft(null);
@@ -200,6 +246,14 @@ export function FounderTextEditor() {
               </div>
 
             <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                className="action-button flex-1"
+                onClick={undoLastChange}
+                disabled={historyIndex <= 0}
+              >
+                Desfazer
+              </button>
               <button
                 type="button"
                 className="action-button flex-1"
