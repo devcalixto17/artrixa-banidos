@@ -59,7 +59,7 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
               <EditableText
                 as="span"
                 entry={{
-                  id: `${pageKey}-nav-banidos`,
+                  id: "header-nav-banidos",
                   label: "Menu • Banidos",
                   defaultText: "Banidos",
                   defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
@@ -74,7 +74,7 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
               <EditableText
                 as="span"
                 entry={{
-                  id: `${pageKey}-nav-suporte`,
+                  id: "header-nav-suporte",
                   label: "Menu • Suporte",
                   defaultText: "Suporte",
                   defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
@@ -89,7 +89,7 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
               <EditableText
                 as="span"
                 entry={{
-                  id: `${pageKey}-nav-booster`,
+                  id: "header-nav-booster",
                   label: "Menu • Booster",
                   defaultText: "Booster",
                   defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
