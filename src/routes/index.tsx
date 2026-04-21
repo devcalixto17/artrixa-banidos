@@ -30,6 +30,7 @@ function Index() {
 
   return (
     <SiteShell
+      pageKey="banidos"
       title="BANIDOS"
       subtitle="Painel oficial de banimentos com consulta rápida para servidores de Counter-Strike 1.6"
     >

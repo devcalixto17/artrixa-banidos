@@ -269,7 +269,7 @@ function BoosterPage() {
   );
 
   return (
-    <SiteShell title="BOOSTER" subtitle="LGSL-style: servidores monitorados em tempo real para CS 1.6">
+    <SiteShell pageKey="booster" title="BOOSTER" subtitle="LGSL-style: servidores monitorados em tempo real para CS 1.6">
       <section className="panel space-y-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 pb-4 text-sm">
           <div className="text-muted-foreground">

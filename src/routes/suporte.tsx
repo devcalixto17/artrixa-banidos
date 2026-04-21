@@ -22,6 +22,7 @@ export const Route = createFileRoute("/suporte")({
 function SuportePage() {
   return (
     <SiteShell
+      pageKey="suporte"
       title="SUPORTE"
       subtitle="Nossa equipe está disponível para ajudar com revisões de ban, denúncias e dúvidas gerais"
     >
