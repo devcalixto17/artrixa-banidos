@@ -200,59 +200,51 @@ export function BanidosTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-base">
-          <thead className="bg-gradient-to-r from-secondary/50 via-card to-accent/20 text-left text-sm uppercase tracking-[0.15em] text-muted-foreground">
-            <tr>
-              <th className="px-5 py-4">ID</th>
-              <th className="px-5 py-4">Nome do player</th>
-              <th className="px-5 py-4">Steam ID</th>
-              <th className="px-5 py-4">Servidor</th>
-              <th className="px-5 py-4 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td className="px-5 py-8 text-muted-foreground" colSpan={5}>
-                  Carregando banidos...
-                </td>
-              </tr>
-            )}
+      <div className="grid gap-3 p-4">
+        {loading && (
+          <div className="rounded-lg border border-border bg-background px-4 py-5 text-sm text-muted-foreground">
+            Carregando banidos...
+          </div>
+        )}
 
-            {!loading && errorMessage && (
-              <tr>
-                <td className="px-5 py-8 text-destructive" colSpan={5}>
-                  {errorMessage}
-                </td>
-              </tr>
-            )}
+        {!loading && errorMessage && (
+          <div className="rounded-lg border border-destructive/50 bg-background px-4 py-5 text-sm text-destructive">
+            {errorMessage}
+          </div>
+        )}
 
-            {!loading && !errorMessage && paged.length === 0 && (
-              <tr>
-                <td className="px-5 py-8 text-muted-foreground" colSpan={5}>
-                  Nenhum jogador banido encontrado.
-                </td>
-              </tr>
-            )}
+        {!loading && !errorMessage && paged.length === 0 && (
+          <div className="rounded-lg border border-border bg-background px-4 py-5 text-sm text-muted-foreground">
+            Nenhum jogador banido encontrado.
+          </div>
+        )}
 
-            {!loading &&
-              !errorMessage &&
-              paged.map((ban) => (
-                <tr key={ban.id} className="border-t border-border/70 transition-colors hover:bg-muted/20">
-                  <td className="px-5 py-4 text-lg font-bold text-primary">#{ban.id}</td>
-                  <td className="px-5 py-4 text-base font-semibold">{ban.player_name}</td>
-                  <td className="px-5 py-4 text-base">{ban.steam_id || "-"}</td>
-                  <td className="px-5 py-4 text-base">{ban.server || "-"}</td>
-                  <td className="px-5 py-4 text-right">
-                    <button type="button" className="action-button" onClick={() => setSelected(ban)}>
-                      Detalhes
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        {!loading &&
+          !errorMessage &&
+          paged.map((ban) => (
+            <article key={ban.id} className="rounded-lg border border-border bg-background px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-[240px] flex-1">
+                  <h3 className="text-base font-bold uppercase text-foreground">{ban.player_name}</h3>
+                  <p className="text-xs text-muted-foreground">ID do ban: #{ban.id}</p>
+                </div>
+
+                <div className="min-w-[220px] flex-1 text-sm">
+                  <p className="text-xs text-muted-foreground">Steam ID</p>
+                  <p className="font-medium text-foreground">{ban.steam_id || "-"}</p>
+                </div>
+
+                <div className="min-w-[220px] flex-1 text-sm">
+                  <p className="text-xs text-muted-foreground">Servidor</p>
+                  <p className="font-medium text-foreground">{ban.server || "-"}</p>
+                </div>
+
+                <button type="button" className="action-button" onClick={() => setSelected(ban)}>
+                  Detalhes
+                </button>
+              </div>
+            </article>
+          ))}
       </div>
 
       <div className="flex items-center justify-between border-t border-border p-5 text-sm text-muted-foreground">
