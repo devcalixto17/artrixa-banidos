@@ -10,6 +10,7 @@ export function FounderTextEditor() {
   const { entries, getConfig, updateEntry, selectionMode, setSelectionMode, editingEntryId, closeEditor } = useTextCustomization();
   const isFounder = hasRole("fundador");
   const [draft, setDraft] = useState<ReturnType<typeof getConfig> | null>(null);
+  const [originalDraft, setOriginalDraft] = useState<ReturnType<typeof getConfig> | null>(null);
 
   const selectedEntry = useMemo(() => {
     if (!entries.length) return null;
@@ -22,13 +23,32 @@ export function FounderTextEditor() {
   useEffect(() => {
     if (!config || !editingEntryId) {
       setDraft(null);
+      setOriginalDraft(null);
       return;
     }
     setDraft(config);
+    setOriginalDraft(config);
   }, [config, editingEntryId]);
+
+  const applyDraftChange = (next: Partial<ReturnType<typeof getConfig>>) => {
+    if (!selectedEntry) {
+      return;
+    }
+
+    setDraft((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const merged = { ...prev, ...next };
+      updateEntry(selectedEntry.id, merged);
+      return merged;
+    });
+  };
 
   const closeModal = () => {
     setDraft(null);
+    setOriginalDraft(null);
     closeEditor();
   };
 
