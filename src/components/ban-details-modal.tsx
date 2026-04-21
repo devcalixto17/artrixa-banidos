@@ -38,20 +38,20 @@ function Row({ label, value }: { label: string; value: string }) {
 export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-3 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 p-3 pt-6"
       role="dialog"
       aria-modal="true"
       aria-label="Detalhes do banimento"
     >
-      <div className="w-full max-w-6xl overflow-hidden rounded-xl border border-border bg-card/95 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-          <h2 className="text-3xl font-bold text-foreground">Banimento de {ban.player_name || "jogador"}</h2>
-          <button onClick={onClose} className="action-button" type="button" aria-label="Fechar detalhes">
-            Fechar
+      <div className="w-full max-w-5xl overflow-hidden rounded-lg border border-border/80 bg-card/95 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+          <h2 className="text-4xl font-semibold text-foreground">Banimento de {ban.player_name || "jogador"}</h2>
+          <button onClick={onClose} className="text-4xl leading-none text-muted-foreground transition-colors hover:text-foreground" type="button" aria-label="Fechar detalhes">
+            ×
           </button>
         </div>
 
-        <div className="max-h-[78vh] overflow-auto">
+        <div className="max-h-[68vh] overflow-auto">
           <table className="w-full border-separate border-spacing-0">
             <tbody>
               <Row label="Nick" value={ban.player_name || "-"} />
@@ -68,9 +68,10 @@ export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
               <Row label="Tipo" value={ban.ban_type || "-"} />
             </tbody>
           </table>
-          <div className="flex justify-end border-t border-border/70 p-4">
-            <button onClick={onClose} className="action-button" type="button">
-              Fechar
+
+          <div className="flex justify-end border-t border-border/70 bg-muted/30 px-4 py-3">
+            <button onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-lg font-bold text-primary-foreground transition-opacity hover:opacity-90" type="button">
+              × Fechar
             </button>
           </div>
         </div>
