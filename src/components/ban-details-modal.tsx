@@ -29,9 +29,9 @@ function formatDate(value: string | null) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <tr className="border-t border-border/60">
-      <th className="w-56 bg-muted/40 px-4 py-3 text-left text-sm font-semibold text-muted-foreground">{label}</th>
-      <td className="px-4 py-3 text-base text-foreground">{value}</td>
+    <tr className="border-b border-border/80">
+      <th className="w-56 bg-background px-4 py-3 text-left text-sm font-semibold text-foreground">{label}</th>
+      <td className="bg-background px-4 py-3 text-base text-foreground">{value}</td>
     </tr>
   );
 }
@@ -48,13 +48,13 @@ export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/75 p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 p-4 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-label="Detalhes do banimento"
       onClick={onClose}
     >
-      <div className="w-full max-w-4xl overflow-hidden rounded-xl border border-border/80 bg-card shadow-2xl animate-scale-in" onClick={(event) => event.stopPropagation()}>
+      <div className="w-full max-w-4xl overflow-hidden rounded-xl border border-border/90 bg-background shadow-2xl animate-scale-in" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
           <h2 className="text-3xl font-semibold text-foreground">Banimento de {ban.player_name || "jogador"}</h2>
           <button onClick={onClose} className="text-4xl leading-none text-muted-foreground transition-colors hover:text-foreground" type="button" aria-label="Fechar detalhes">
@@ -80,7 +80,7 @@ export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
             </tbody>
           </table>
 
-          <div className="flex justify-end border-t border-border/70 bg-muted/30 px-4 py-3">
+          <div className="flex justify-end border-t border-border/80 bg-background px-4 py-3">
             <button onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-lg font-bold text-accent-foreground transition-opacity hover:opacity-90" type="button">
               × Fechar
             </button>
