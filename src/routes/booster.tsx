@@ -115,7 +115,8 @@ function BoosterPage() {
       }
 
       refreshInFlightRef.current = true;
-      const results = await Promise.allSettled(
+      try {
+        const results = await Promise.allSettled(
         currentServers.map(async (server) => {
           let status: BoosterStatusResponse = { ok: false, message: "Falha ao consultar fonte de status" };
           try {
@@ -211,23 +212,6 @@ function BoosterPage() {
             return;
           }
 
-          if (!next[server.id]) {
-            const { ip, port } = parseAddress(server.address);
-            next[server.id] = {
-              name: server.label,
-              ip,
-              port,
-              status: "offline",
-              map: null,
-              players: 0,
-              maxPlayers: null,
-              playersOnline: [],
-              playersSource: "fallback",
-              country: null,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-
           const serverLabel = server.label;
           if (item.status === "fulfilled") {
             const errorMessage = item.value.status.ok ? "falha desconhecida" : item.value.status.message;
@@ -241,12 +225,14 @@ function BoosterPage() {
       });
 
     if (failures.length) {
-      setStatusNotice("Alguns servidores não responderam agora; mantendo último status válido.");
+      setStatusNotice("A API limitou algumas consultas; mantendo o último status válido.");
     } else {
       setStatusNotice(null);
     }
 
-    refreshInFlightRef.current = false;
+      } finally {
+        refreshInFlightRef.current = false;
+      }
   };
 
   useEffect(() => {
@@ -298,9 +284,10 @@ function BoosterPage() {
       return;
     }
 
+    const intervalMs = Math.max(15000, servers.length * 1500);
     const interval = window.setInterval(() => {
       void refreshStatuses(servers);
-    }, 15000);
+    }, intervalMs);
 
     return () => window.clearInterval(interval);
   }, [servers]);
