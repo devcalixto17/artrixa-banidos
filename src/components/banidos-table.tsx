@@ -222,7 +222,16 @@ export function BanidosTable() {
         {!loading &&
           !errorMessage &&
           paged.map((ban) => (
-            <article key={ban.id} className="rounded-lg border border-border bg-background px-4 py-3">
+            <article
+              key={ban.id}
+              className="rounded-lg border bg-background px-4 py-3"
+              style={{
+                borderColor: !ban.unban_time ? "var(--color-destructive)" : "var(--color-status-online)",
+                boxShadow: !ban.unban_time
+                  ? "inset 4px 0 0 var(--color-destructive)"
+                  : "inset 4px 0 0 var(--color-status-online)",
+              }}
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-[240px] flex-1">
                   <h3 className="text-base font-bold uppercase text-foreground">{ban.player_name}</h3>
