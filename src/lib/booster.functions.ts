@@ -160,26 +160,6 @@ export const getServerStatus = createServerFn({ method: "GET" })
         return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
       }
 
-      const payload = { data: servers } as {
-        data?: Array<{
-          id?: string;
-          attributes?: {
-            name?: string;
-            ip?: string;
-            port?: number;
-            players?: number;
-            maxPlayers?: number;
-            status?: string;
-            country?: string;
-            details?: {
-              map?: string;
-            };
-          };
-        }>;
-      };
-
-      void payload;
-
       let playersOnline: string[] = [];
       let playersSource: "live" | "fallback" = "live";
       if (serverId) {
