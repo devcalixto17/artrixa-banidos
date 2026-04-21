@@ -188,6 +188,20 @@ function BoosterPage() {
   }, [servers]);
 
   useEffect(() => {
+    if (!servers.length || Object.keys(statuses).length > 0) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setStatusNotice((prev) =>
+        prev ?? "Falha ao consultar a fonte de status no momento; mantendo os dados anteriores quando disponíveis.",
+      );
+    }, 8000);
+
+    return () => window.clearTimeout(timeout);
+  }, [servers, statuses]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
