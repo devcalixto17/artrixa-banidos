@@ -56,21 +56,45 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
               className="menu-link"
               activeProps={{ className: "menu-link menu-link-active" }}
             >
-              Banidos
+              <EditableText
+                as="span"
+                entry={{
+                  id: `${pathname}-nav-banidos`,
+                  label: "Menu • Banidos",
+                  defaultText: "Banidos",
+                  defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
+                }}
+              />
             </Link>
             <Link
               to="/suporte"
               className="menu-link"
               activeProps={{ className: "menu-link menu-link-active" }}
             >
-              Suporte
+              <EditableText
+                as="span"
+                entry={{
+                  id: `${pathname}-nav-suporte`,
+                  label: "Menu • Suporte",
+                  defaultText: "Suporte",
+                  defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
+                }}
+              />
             </Link>
             <Link
               to="/booster"
               className="menu-link"
               activeProps={{ className: "menu-link menu-link-active" }}
             >
-              Booster
+              <EditableText
+                as="span"
+                entry={{
+                  id: `${pathname}-nav-booster`,
+                  label: "Menu • Booster",
+                  defaultText: "Booster",
+                  defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
+                }}
+              />
             </Link>
           </nav>
         </div>

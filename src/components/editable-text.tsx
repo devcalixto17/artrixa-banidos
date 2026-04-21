@@ -11,6 +11,15 @@ export function EditableText({ entry, className, as = "span" }: EditableTextProp
   const { registerEntry, getConfig, selectionMode, openEditorFor } = useTextCustomization();
   const config = getConfig(entry);
 
+  const handleSelect = (event: React.MouseEvent) => {
+    if (!selectionMode) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    openEditorFor(entry.id);
+  };
+
   useEffect(() => {
     registerEntry(entry);
   }, [entry, registerEntry]);
@@ -20,7 +29,7 @@ export function EditableText({ entry, className, as = "span" }: EditableTextProp
   return (
     <Component
       className={className}
-      onClick={selectionMode ? () => openEditorFor(entry.id) : undefined}
+      onClick={selectionMode ? handleSelect : undefined}
       style={{
         color: config.color,
         fontSize: `${config.size}px`,

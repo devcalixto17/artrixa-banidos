@@ -4,6 +4,7 @@ import { BanidosTable } from "../components/banidos-table";
 import { SiteShell } from "../components/site-shell";
 import { SupabaseConfigCard } from "../components/supabase-config-card";
 import { useAuth } from "../lib/auth";
+import { EditableText } from "../components/editable-text";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,10 +41,27 @@ function Index() {
         <>
           <section className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-xs text-muted-foreground">
             <span>
-              Logado como <strong className="text-foreground">{displayName || user.email || "usuário"}</strong> ({roles.join(", ") || "sem cargo"})
+              <EditableText
+                as="span"
+                entry={{
+                  id: "index-logged-label",
+                  label: "Barra de usuário • prefixo",
+                  defaultText: "Logado como",
+                  defaultConfig: { font: "Exo 2", size: 14, weight: "500", uppercase: false },
+                }}
+              />{" "}
+              <strong className="text-foreground">{displayName || user.email || "usuário"}</strong> ({roles.join(", ") || "sem cargo"})
             </span>
             <button type="button" className="action-button" onClick={() => void signOut()}>
-              Sair
+              <EditableText
+                as="span"
+                entry={{
+                  id: "index-signout-button",
+                  label: "Barra de usuário • botão sair",
+                  defaultText: "Sair",
+                  defaultConfig: { font: "Orbitron", size: 14, weight: "700", uppercase: true },
+                }}
+              />
             </button>
           </section>
 

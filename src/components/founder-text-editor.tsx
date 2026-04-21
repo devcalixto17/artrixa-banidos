@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Pencil } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { useTextCustomization } from "../lib/text-customization";
 
@@ -37,8 +38,14 @@ export function FounderTextEditor() {
 
   return (
     <aside className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      <button type="button" className="action-button" onClick={() => setSelectionMode(!selectionMode)}>
-        {selectionMode ? "Selecionando texto..." : "Editar textos"}
+      <button
+        type="button"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary text-secondary-foreground shadow-lg"
+        onClick={() => setSelectionMode(!selectionMode)}
+        title={selectionMode ? "Selecionando texto" : "Editar textos"}
+        aria-label={selectionMode ? "Selecionando texto" : "Editar textos"}
+      >
+        <Pencil size={16} />
       </button>
 
       {selectionMode && (
@@ -49,9 +56,11 @@ export function FounderTextEditor() {
       )}
 
       {editingEntryId && selectedEntry && draft && (
-        <div className="panel w-[min(92vw,360px)] space-y-3 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Editor de texto (fundador)</p>
-          <p className="text-sm text-foreground">{selectedEntry.label}</p>
+        <>
+          <div className="fixed inset-0 z-40 bg-background/75 backdrop-blur-sm" onClick={closeModal} />
+          <div className="panel fixed left-1/2 top-1/2 z-50 w-[min(92vw,380px)] -translate-x-1/2 -translate-y-1/2 space-y-3 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Editor de texto (fundador)</p>
+            <p className="text-sm text-foreground">{selectedEntry.label}</p>
 
               <label className="space-y-1 text-xs text-muted-foreground">
                 Texto
@@ -172,22 +181,23 @@ export function FounderTextEditor() {
                 </div>
               </div>
 
-          <div className="flex gap-2 pt-1">
-            <button
-              type="button"
-              className="action-button flex-1"
-              onClick={() => {
-                updateEntry(selectedEntry.id, draft);
-                closeModal();
-              }}
-            >
-              Salvar
-            </button>
-            <button type="button" className="action-button flex-1" onClick={closeModal}>
-              Cancelar
-            </button>
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                className="action-button flex-1"
+                onClick={() => {
+                  updateEntry(selectedEntry.id, draft);
+                  closeModal();
+                }}
+              >
+                Salvar
+              </button>
+              <button type="button" className="action-button flex-1" onClick={closeModal}>
+                Cancelar
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </aside>
   );
