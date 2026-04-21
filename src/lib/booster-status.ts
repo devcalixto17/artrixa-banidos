@@ -63,7 +63,10 @@ function mapLiveStatus(server: BattleMetricsServer, fallbackName: string, player
   };
 }
 
-async function fetchServerById(serverId: string, headers: HeadersInit): Promise<BattleMetricsServer | null> {
+async function fetchServerById(serverId: string, headers: HeadersInit): Promise<{
+  server: BattleMetricsServer;
+  playersOnline: string[];
+} | null> {
   const response = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, { headers });
   if (!response.ok) {
     return null;
@@ -71,13 +74,27 @@ async function fetchServerById(serverId: string, headers: HeadersInit): Promise<
 
   const payload = (await response.json()) as {
     data?: BattleMetricsServer;
+    included?: Array<{
+      type?: string;
+      attributes?: {
+        name?: string;
+      };
+    }>;
   };
 
   if (!payload.data?.attributes) {
     return null;
   }
 
-  return { ...payload.data, id: payload.data.id ?? serverId };
+  const playersOnline = (payload.included ?? [])
+    .filter((entry) => entry.type === "player")
+    .map((entry) => entry.attributes?.name?.trim() ?? "")
+    .filter(Boolean);
+
+  return {
+    server: { ...payload.data, id: payload.data.id ?? serverId },
+    playersOnline,
+  };
 }
 
 export const getServerStatus = async ({
@@ -104,6 +121,14 @@ export const getServerStatus = async ({
     const serverById = safeData.serverId
       ? await fetchServerById(safeData.serverId, requestHeaders)
       : null;
+
+    if (serverById?.server.attributes) {
+      return {
+        ok: true,
+        data: mapLiveStatus(serverById.server, safeData.address, serverById.playersOnline),
+        resolvedServerId: serverById.server.id ?? safeData.serverId ?? null,
+      };
+    }
 
     const queryAttempts = [
       { search: normalizedAddress, includeGame: true },
@@ -134,9 +159,9 @@ export const getServerStatus = async ({
       }
     >();
 
-    if (serverById) {
-      const key = serverById.id ?? `${serverById.attributes?.ip ?? "unknown"}:${String(serverById.attributes?.port ?? "")}`;
-      mergedServers.set(key, serverById);
+    if (serverById?.server) {
+      const key = serverById.server.id ?? `${serverById.server.attributes?.ip ?? "unknown"}:${String(serverById.server.attributes?.port ?? "")}`;
+      mergedServers.set(key, serverById.server);
     }
 
     for (const attempt of uniqueAttempts) {
@@ -208,27 +233,7 @@ export const getServerStatus = async ({
       return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
     }
 
-    let playersOnline: string[] = [];
-    if (serverId) {
-      const liveWithPlayers = await fetchServerById(serverId, requestHeaders);
-      if (liveWithPlayers?.attributes) {
-        const livePayload = (await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, {
-          headers: requestHeaders,
-        }).then((response) => (response.ok ? response.json() : Promise.resolve({})))) as {
-          included?: Array<{
-            type?: string;
-            attributes?: {
-              name?: string;
-            };
-          }>;
-        };
-
-        playersOnline = (livePayload.included ?? [])
-          .filter((entry) => entry.type === "player")
-          .map((entry) => entry.attributes?.name?.trim() ?? "")
-          .filter(Boolean);
-      }
-    }
+    const playersOnline = serverId ? (await fetchServerById(serverId, requestHeaders))?.playersOnline ?? [] : [];
 
     return {
       ok: true,
