@@ -6,6 +6,7 @@ import { useAuth } from "../lib/auth";
 import { getServerStatus, type BoosterLiveStatus } from "../lib/booster.functions";
 import flagBR from "../assets/flag-br.png";
 import flagUS from "../assets/flag-us.png";
+import steamIcon from "../assets/steam-icon.png";
 
 export const Route = createFileRoute("/booster")({
   head: () => ({
@@ -295,6 +296,7 @@ function BoosterPage() {
               const hasLiveStatus = Boolean(status);
               const isExpanded = expandedServerId === server.id;
               const country = COUNTRY_FLAGS[server.country];
+              const steamConnectUrl = `steam://connect/${server.address}`;
 
               return (
                 <article
@@ -348,6 +350,10 @@ function BoosterPage() {
                       >
                         {hasLiveStatus ? (isOnline ? "Online" : "Offline") : "Conectando"}
                       </span>
+                      <a href={steamConnectUrl} className="action-button gap-2" title={`Conectar em ${server.address}`}>
+                        <img src={steamIcon} alt="Steam" className="h-4 w-4 rounded-full" loading="lazy" />
+                        <span>CONECTAR</span>
+                      </a>
                       {isFounder && (
                         <button type="button" className="action-button" onClick={() => void handleDeleteServer(server.id)}>
                           Remover
