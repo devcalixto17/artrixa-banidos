@@ -292,7 +292,16 @@ function BoosterPage() {
               const country = COUNTRY_FLAGS[server.country];
 
               return (
-                <article key={server.id} className="rounded-lg border border-border bg-background px-4 py-3">
+                <article
+                  key={server.id}
+                  className="rounded-lg border bg-background px-4 py-3"
+                  style={{
+                    borderColor: isOnline ? "var(--color-status-online)" : "var(--color-status-offline)",
+                    boxShadow: isOnline
+                      ? "inset 4px 0 0 var(--color-status-online)"
+                      : "inset 4px 0 0 var(--color-status-offline)",
+                  }}
+                >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <button
                       type="button"
@@ -306,7 +315,16 @@ function BoosterPage() {
                       </div>
                     </button>
                     <div className="flex items-center gap-2">
-                      <span className={`rounded-md border px-2 py-1 text-xs font-semibold uppercase ${isOnline ? "border-border bg-secondary text-secondary-foreground" : "border-border bg-muted text-muted-foreground"}`}>
+                      <span
+                        className="rounded-md border px-2 py-1 text-xs font-semibold uppercase"
+                        style={{
+                          borderColor: isOnline ? "var(--color-status-online)" : "var(--color-status-offline)",
+                          backgroundColor: isOnline
+                            ? "color-mix(in oklab, var(--color-status-online) 28%, transparent)"
+                            : "color-mix(in oklab, var(--color-status-offline) 28%, transparent)",
+                          color: isOnline ? "var(--color-status-online)" : "var(--color-status-offline)",
+                        }}
+                      >
                         {isOnline ? "Online" : "Offline"}
                       </span>
                       {isFounder && (
