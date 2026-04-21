@@ -240,10 +240,10 @@ export function BanidosTable() {
               key={ban.id}
               className="rounded-lg border bg-background px-4 py-3"
               style={{
-                borderColor: !ban.unban_time ? "var(--color-destructive)" : "var(--color-status-online)",
+                borderColor: !ban.unban_time ? "var(--color-destructive)" : "var(--color-status-temporary)",
                 boxShadow: !ban.unban_time
                   ? "inset 4px 0 0 var(--color-destructive)"
-                  : "inset 4px 0 0 var(--color-status-online)",
+                  : "inset 4px 0 0 var(--color-status-temporary)",
               }}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
