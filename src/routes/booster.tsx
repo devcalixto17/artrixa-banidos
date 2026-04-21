@@ -104,15 +104,39 @@ function BoosterPage() {
 
     setStatuses((prev) => {
       const next = { ...prev };
-      for (const item of results) {
-        if (item.status !== "fulfilled") {
-          continue;
+      const now = new Date().toISOString();
+
+      const offlineFallback = (server: BoosterServer): BoosterLiveStatus => {
+        const [ipPart, portPart] = server.address.split(":");
+        return {
+          name: server.label,
+          ip: ipPart ?? null,
+          port: Number(portPart) || null,
+          status: "offline",
+          map: null,
+          players: 0,
+          maxPlayers: null,
+          playersOnline: [],
+          playersSource: "fallback",
+          country: null,
+          updatedAt: now,
+        };
+      };
+
+      results.forEach((item, index) => {
+        const server = currentServers[index];
+        if (!server) {
+          return;
         }
 
-        if (item.value.status.ok) {
+        if (item.status === "fulfilled" && item.value.status.ok) {
           next[item.value.serverId] = item.value.status.data;
+          return;
         }
-      }
+
+        next[server.id] = offlineFallback(server);
+      });
+
       return next;
     });
   };
