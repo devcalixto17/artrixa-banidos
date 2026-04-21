@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
+import { EditableText } from "./editable-text";
+import { FounderTextEditor } from "./founder-text-editor";
 
 type SiteShellProps = {
   title: string;
@@ -7,13 +9,45 @@ type SiteShellProps = {
 };
 
 export function SiteShell({ title, subtitle, children }: SiteShellProps) {
+  const { pathname } = useLocation();
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-8">
       <header className="panel p-4 md:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold uppercase tracking-wide text-foreground md:text-3xl">{title}</h1>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <EditableText
+              as="h1"
+              className="tracking-wide md:text-3xl"
+              entry={{
+                id: `${pathname}-shell-title`,
+                label: `${title} • título da página`,
+                defaultText: title,
+                defaultConfig: {
+                  font: "Orbitron",
+                  size: 32,
+                  weight: "800",
+                  uppercase: true,
+                  color: "#f4f5ff",
+                },
+              }}
+            />
+            <EditableText
+              as="p"
+              className="mt-1"
+              entry={{
+                id: `${pathname}-shell-subtitle`,
+                label: `${title} • subtítulo da página`,
+                defaultText: subtitle,
+                defaultConfig: {
+                  font: "Exo 2",
+                  size: 14,
+                  weight: "500",
+                  uppercase: false,
+                  color: "#b9b6d2",
+                },
+              }}
+            />
           </div>
 
           <nav className="flex flex-wrap gap-2" aria-label="Navegação principal">
@@ -43,6 +77,7 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
       </header>
 
       {children}
+      <FounderTextEditor />
     </main>
   );
 }

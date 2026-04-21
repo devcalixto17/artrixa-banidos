@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "../lib/auth";
+import { TextCustomizationProvider } from "../lib/text-customization";
 
 import appCss from "../styles.css?url";
 
@@ -72,7 +73,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <AuthProvider>
-      <Outlet />
+      <TextCustomizationProvider>
+        <Outlet />
+      </TextCustomizationProvider>
     </AuthProvider>
   );
 }
