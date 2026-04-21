@@ -94,7 +94,7 @@ function BoosterPage() {
   };
 
   const refreshStatuses = async (currentServers: BoosterServer[]) => {
-    const results = await Promise.all(
+    const results = await Promise.allSettled(
       currentServers.map(async (server) => {
         const status = await getServerStatus({ data: { address: server.address, game: server.game } });
         return { serverId: server.id, status };
@@ -104,8 +104,12 @@ function BoosterPage() {
     setStatuses((prev) => {
       const next = { ...prev };
       for (const item of results) {
-        if (item.status.ok) {
-          next[item.serverId] = item.status.data;
+        if (item.status !== "fulfilled") {
+          continue;
+        }
+
+        if (item.value.status.ok) {
+          next[item.value.serverId] = item.value.status.data;
         }
       }
       return next;
@@ -288,6 +292,7 @@ function BoosterPage() {
             servers.map((server) => {
               const status = statuses[server.id];
               const isOnline = status?.status === "online";
+              const hasLiveStatus = Boolean(status);
               const isExpanded = expandedServerId === server.id;
               const country = COUNTRY_FLAGS[server.country];
 
@@ -296,10 +301,16 @@ function BoosterPage() {
                   key={server.id}
                   className="rounded-lg border bg-background px-4 py-3"
                   style={{
-                    borderColor: isOnline ? "var(--color-status-online)" : "var(--color-status-offline)",
-                    boxShadow: isOnline
-                      ? "inset 4px 0 0 var(--color-status-online)"
-                      : "inset 4px 0 0 var(--color-status-offline)",
+                    borderColor: hasLiveStatus
+                      ? isOnline
+                        ? "var(--color-status-online)"
+                        : "var(--color-status-offline)"
+                      : "var(--color-border)",
+                    boxShadow: hasLiveStatus
+                      ? isOnline
+                        ? "inset 4px 0 0 var(--color-status-online)"
+                        : "inset 4px 0 0 var(--color-status-offline)"
+                      : "inset 4px 0 0 var(--color-border)",
                   }}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -318,14 +329,24 @@ function BoosterPage() {
                       <span
                         className="rounded-md border px-2 py-1 text-xs font-semibold uppercase"
                         style={{
-                          borderColor: isOnline ? "var(--color-status-online)" : "var(--color-status-offline)",
-                          backgroundColor: isOnline
-                            ? "color-mix(in oklab, var(--color-status-online) 28%, transparent)"
-                            : "color-mix(in oklab, var(--color-status-offline) 28%, transparent)",
-                          color: isOnline ? "var(--color-status-online)" : "var(--color-status-offline)",
+                          borderColor: hasLiveStatus
+                            ? isOnline
+                              ? "var(--color-status-online)"
+                              : "var(--color-status-offline)"
+                            : "var(--color-border)",
+                          backgroundColor: hasLiveStatus
+                            ? isOnline
+                              ? "color-mix(in oklab, var(--color-status-online) 28%, transparent)"
+                              : "color-mix(in oklab, var(--color-status-offline) 28%, transparent)"
+                            : "color-mix(in oklab, var(--color-border) 32%, transparent)",
+                          color: hasLiveStatus
+                            ? isOnline
+                              ? "var(--color-status-online)"
+                              : "var(--color-status-offline)"
+                            : "var(--color-muted-foreground)",
                         }}
                       >
-                        {isOnline ? "Online" : "Offline"}
+                        {hasLiveStatus ? (isOnline ? "Online" : "Offline") : "Conectando"}
                       </span>
                       {isFounder && (
                         <button type="button" className="action-button" onClick={() => void handleDeleteServer(server.id)}>
