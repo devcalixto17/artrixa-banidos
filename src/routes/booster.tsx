@@ -142,20 +142,22 @@ function BoosterPage() {
           return;
         }
 
-        const { ip, port } = parseAddress(server.address);
-        next[server.id] = {
-          name: server.label,
-          ip,
-          port,
-          status: "offline",
-          map: null,
-          players: 0,
-          maxPlayers: null,
-          playersOnline: [],
-          playersSource: "fallback",
-          country: null,
-          updatedAt: new Date().toISOString(),
-        };
+        if (!next[server.id]) {
+          const { ip, port } = parseAddress(server.address);
+          next[server.id] = {
+            name: server.label,
+            ip,
+            port,
+            status: "offline",
+            map: null,
+            players: 0,
+            maxPlayers: null,
+            playersOnline: [],
+            playersSource: "fallback",
+            country: null,
+            updatedAt: new Date().toISOString(),
+          };
+        }
 
         const serverLabel = server.label;
         if (item.status === "fulfilled") {
@@ -218,6 +220,18 @@ function BoosterPage() {
     }
 
     void refreshStatuses(servers);
+  }, [servers]);
+
+  useEffect(() => {
+    if (!servers.length) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      void refreshStatuses(servers);
+    }, 20000);
+
+    return () => window.clearInterval(interval);
   }, [servers]);
 
   useEffect(() => {
