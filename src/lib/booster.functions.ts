@@ -47,25 +47,120 @@ export const getServerStatus = createServerFn({ method: "GET" })
       const expectedIp = expectedIpRaw?.trim() || "";
       const expectedPort = Number(expectedPortRaw);
 
-      const query = new URL("https://api.battlemetrics.com/servers");
-      query.searchParams.set("filter[search]", data.address);
-      query.searchParams.set("filter[game]", data.game);
-      query.searchParams.set("page[size]", "20");
+      const queryAttempts = [
+        { search: normalizedAddress, includeGame: true },
+        { search: expectedIp, includeGame: true },
+        { search: normalizedAddress, includeGame: false },
+        { search: expectedIp, includeGame: false },
+      ].filter((attempt) => attempt.search.length > 0);
 
-      let response = await fetch(query.toString(), { headers: requestHeaders });
+      const uniqueAttempts = Array.from(
+        new Map(queryAttempts.map((attempt) => [`${attempt.search}:${attempt.includeGame}`, attempt])).values(),
+      );
 
-      if (response.status === 403) {
-        const fallbackQuery = new URL("https://api.battlemetrics.com/servers");
-        fallbackQuery.searchParams.set("filter[search]", data.address);
-        fallbackQuery.searchParams.set("page[size]", "20");
-        response = await fetch(fallbackQuery.toString(), { headers: requestHeaders });
+      const mergedServers = new Map<
+        string,
+        {
+          id?: string;
+          attributes?: {
+            name?: string;
+            ip?: string;
+            port?: number;
+            players?: number;
+            maxPlayers?: number;
+            status?: string;
+            country?: string;
+            details?: {
+              map?: string;
+            };
+          };
+        }
+      >();
+
+      for (const attempt of uniqueAttempts) {
+        const query = new URL("https://api.battlemetrics.com/servers");
+        query.searchParams.set("filter[search]", attempt.search);
+        if (attempt.includeGame) {
+          query.searchParams.set("filter[game]", data.game);
+        }
+        query.searchParams.set("page[size]", "20");
+
+        let response = await fetch(query.toString(), { headers: requestHeaders });
+        if (response.status === 403 && attempt.includeGame) {
+          const fallbackQuery = new URL("https://api.battlemetrics.com/servers");
+          fallbackQuery.searchParams.set("filter[search]", attempt.search);
+          fallbackQuery.searchParams.set("page[size]", "20");
+          response = await fetch(fallbackQuery.toString(), { headers: requestHeaders });
+        }
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const payload = (await response.json()) as {
+          data?: Array<{
+            id?: string;
+            attributes?: {
+              name?: string;
+              ip?: string;
+              port?: number;
+              players?: number;
+              maxPlayers?: number;
+              status?: string;
+              country?: string;
+              details?: {
+                map?: string;
+              };
+            };
+          }>;
+        };
+
+        for (const server of payload.data ?? []) {
+          const key = server.id ?? `${server.attributes?.ip ?? "unknown"}:${String(server.attributes?.port ?? "")}`;
+          mergedServers.set(key, server);
+        }
       }
 
-      if (!response.ok) {
-        return { ok: false, message: `Falha na consulta (${response.status})` };
+      const servers = Array.from(mergedServers.values());
+      if (!servers.length) {
+        return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
       }
 
-      const payload = (await response.json()) as {
+      const scoredServers = servers
+        .map((entry) => {
+          const attrs = entry.attributes;
+          if (!attrs?.ip || typeof attrs.port !== "number") {
+            return null;
+          }
+
+          let score = 0;
+          if (attrs.ip === expectedIp && !Number.isNaN(expectedPort) && attrs.port === expectedPort) {
+            score = 100;
+          } else if (attrs.ip === expectedIp && !Number.isNaN(expectedPort)) {
+            score = 80 - Math.min(Math.abs(attrs.port - expectedPort), 50);
+          } else if (attrs.ip === expectedIp) {
+            score = 70;
+          } else if (normalizedAddress.includes(attrs.ip)) {
+            score = 40;
+          }
+
+          return { entry, score };
+        })
+        .filter((entry): entry is { entry: (typeof servers)[number]; score: number } => Boolean(entry))
+        .sort((a, b) => b.score - a.score);
+
+      const matchedServer =
+        scoredServers.find((entry) => entry.score >= 70)?.entry ??
+        scoredServers.find((entry) => entry.score > 0)?.entry ??
+        servers[0];
+
+      const first = matchedServer?.attributes;
+      const serverId = matchedServer?.id;
+      if (!first) {
+        return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
+      }
+
+      const payload = { data: servers } as {
         data?: Array<{
           id?: string;
           attributes?: {
@@ -83,24 +178,7 @@ export const getServerStatus = createServerFn({ method: "GET" })
         }>;
       };
 
-      const matchedServer = (payload.data ?? []).find((entry) => {
-        const attrs = entry.attributes;
-        if (!attrs?.ip || typeof attrs.port !== "number") {
-          return false;
-        }
-
-        if (!expectedIp || Number.isNaN(expectedPort)) {
-          return true;
-        }
-
-        return attrs.ip === expectedIp && attrs.port === expectedPort;
-      });
-
-      const first = matchedServer?.attributes;
-      const serverId = matchedServer?.id;
-      if (!first) {
-        return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
-      }
+      void payload;
 
       let playersOnline: string[] = [];
       let playersSource: "live" | "fallback" = "live";
