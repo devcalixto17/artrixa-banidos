@@ -5,20 +5,6 @@ type BanDetailsModalProps = {
   onClose: () => void;
 };
 
-type DetailItemProps = {
-  label: string;
-  value: string;
-};
-
-function DetailItem({ label, value }: DetailItemProps) {
-  return (
-    <div className="rounded-lg border border-border bg-muted/40 p-3">
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm text-foreground">{value}</p>
-    </div>
-  );
-}
-
 function getBanDurationLabel(banDate: string | null, unbanTime: string | null) {
   if (!unbanTime) return "Permanente";
   if (!banDate) return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
@@ -33,38 +19,59 @@ function getBanDurationLabel(banDate: string | null, unbanTime: string | null) {
   return `${days}d ${hours}h ${minutes}m`;
 }
 
+function formatDate(value: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("pt-BR");
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <tr className="border-t border-border/60">
+      <th className="w-56 bg-muted/40 px-4 py-3 text-left text-sm font-semibold text-muted-foreground">{label}</th>
+      <td className="px-4 py-3 text-base text-foreground">{value}</td>
+    </tr>
+  );
+}
+
 export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-3 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Detalhes do banimento"
     >
-      <div className="panel max-h-[90vh] w-full max-w-2xl overflow-y-auto p-5">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold uppercase tracking-wide">Detalhes do banimento</h2>
-            <p className="text-xs text-muted-foreground">Registro #{ban.id}</p>
-          </div>
-          <button onClick={onClose} className="action-button" type="button">
+      <div className="w-full max-w-6xl overflow-hidden rounded-xl border border-border bg-card/95 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
+          <h2 className="text-3xl font-bold text-foreground">Banimento de {ban.player_name || "jogador"}</h2>
+          <button onClick={onClose} className="action-button" type="button" aria-label="Fechar detalhes">
             Fechar
           </button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <DetailItem label="Player" value={ban.player_name || "-"} />
-          <DetailItem label="Steam ID" value={ban.steam_id || "-"} />
-          <DetailItem label="IP do player" value={ban.player_ip || "-"} />
-          <DetailItem label="Servidor" value={ban.server || "-"} />
-          <DetailItem label="Admin" value={ban.banned_by || "-"} />
-          <DetailItem label="Steam ID admin" value={ban.admin_steamid || "-"} />
-          <DetailItem label="IP admin" value={ban.admin_ip || "-"} />
-          <DetailItem label="Tipo" value={ban.ban_type || "-"} />
-          <DetailItem label="Data" value={ban.ban_date ? new Date(ban.ban_date).toLocaleString("pt-BR") : "-"} />
-          <DetailItem label="Duração" value={getBanDurationLabel(ban.ban_date, ban.unban_time)} />
-          <div className="sm:col-span-2">
-            <DetailItem label="Motivo" value={ban.reason || "Sem motivo informado"} />
+        <div className="max-h-[78vh] overflow-auto">
+          <table className="w-full border-separate border-spacing-0">
+            <tbody>
+              <Row label="Nick" value={ban.player_name || "-"} />
+              <Row label="SteamID" value={ban.steam_id || "-"} />
+              <Row label="IP" value={ban.player_ip || "-"} />
+              <Row label="Servidor" value={ban.server || "-"} />
+              <Row label="Motivo" value={ban.reason || "Sem motivo informado"} />
+              <Row label="Banido em" value={formatDate(ban.ban_date)} />
+              <Row label="Expira em" value={ban.unban_time ? formatDate(ban.unban_time) : "Permanente"} />
+              <Row label="Duração" value={getBanDurationLabel(ban.ban_date, ban.unban_time)} />
+              <Row label="Admin" value={ban.banned_by || "-"} />
+              <Row label="Steam admin" value={ban.admin_steamid || "-"} />
+              <Row label="IP admin" value={ban.admin_ip || "-"} />
+              <Row label="Tipo" value={ban.ban_type || "-"} />
+            </tbody>
+          </table>
+          <div className="flex justify-end border-t border-border/70 p-4">
+            <button onClick={onClose} className="action-button" type="button">
+              Fechar
+            </button>
           </div>
         </div>
       </div>
