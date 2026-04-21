@@ -1,33 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient, getSupabaseConfig, type BanRecord } from "../lib/supabase";
+import { BanDetailsModal } from "./ban-details-modal";
 
 const PAGE_SIZE = 10;
 
 type SortField = "id" | "ban_date";
 type SortDirection = "asc" | "desc";
-
-function formatDuration(banDate: string | null, unbanTime: string | null) {
-  if (!unbanTime) return "Permanente";
-  if (!banDate) return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
-
-  const diffMs = new Date(unbanTime).getTime() - new Date(banDate).getTime();
-  if (Number.isNaN(diffMs) || diffMs <= 0) {
-    return `Até ${new Date(unbanTime).toLocaleString("pt-BR")}`;
-  }
-
-  const minutes = Math.floor(diffMs / 60000);
-  const days = Math.floor(minutes / 1440);
-  const hours = Math.floor((minutes % 1440) / 60);
-  const mins = minutes % 60;
-  return `${days}d ${hours}h ${mins}m`;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleString("pt-BR");
-}
 
 function mapBanRecord(raw: Record<string, unknown>): BanRecord {
   return {
@@ -221,33 +199,6 @@ export function BanidosTable() {
         </div>
       </div>
 
-       {selected && (
-         <div className="border-b border-border/80 bg-gradient-to-r from-secondary/30 via-card to-accent/10 p-5">
-          <div className="mb-3 flex items-center justify-between gap-2">
-             <h3 className="text-lg font-bold uppercase tracking-[0.12em] text-foreground" style={{ fontFamily: '"Orbitron", "Exo 2", sans-serif' }}>Detalhes do banimento #{selected.id}</h3>
-            <button type="button" className="action-button" onClick={() => setSelected(null)}>
-              Fechar detalhes
-            </button>
-          </div>
-
-           <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Player:</span> {selected.player_name || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Steam ID:</span> {selected.steam_id || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">IP player:</span> {selected.player_ip || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Servidor:</span> {selected.server || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Admin:</span> {selected.banned_by || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Steam Admin:</span> {selected.admin_steamid || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">IP Admin:</span> {selected.admin_ip || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Tipo:</span> {selected.ban_type || "-"}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Data do ban:</span> {formatDate(selected.ban_date)}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Unban:</span> {formatDate(selected.unban_time)}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Duração:</span> {formatDuration(selected.ban_date, selected.unban_time)}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3"><span className="text-sm font-semibold text-muted-foreground">Criado em:</span> {formatDate(selected.created_at)}</div>
-             <div className="rounded-xl border border-border bg-card/80 p-3 sm:col-span-2 lg:col-span-4"><span className="text-sm font-semibold text-muted-foreground">Motivo:</span> {selected.reason || `Tipo: ${selected.ban_type}`}</div>
-          </div>
-        </div>
-      )}
-
       <div className="overflow-x-auto">
         <table className="min-w-full text-base">
           <thead className="bg-gradient-to-r from-secondary/50 via-card to-accent/20 text-left text-sm uppercase tracking-[0.15em] text-muted-foreground">
@@ -328,5 +279,7 @@ export function BanidosTable() {
       </div>
 
     </section>
+
+    {selected && <BanDetailsModal ban={selected} onClose={() => setSelected(null)} />}
   );
 }
