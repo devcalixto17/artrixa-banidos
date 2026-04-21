@@ -3,6 +3,7 @@ import { z } from "zod";
 const serverLookupInput = z.object({
   address: z.string().trim().min(3).max(80),
   game: z.string().trim().min(2).max(20).default("cs"),
+  serverId: z.string().trim().min(1).max(30).optional(),
 });
 
 export type BoosterLiveStatus = {
@@ -20,13 +21,86 @@ export type BoosterLiveStatus = {
 };
 
 export type BoosterStatusResponse =
-  | { ok: true; data: BoosterLiveStatus }
+  | { ok: true; data: BoosterLiveStatus; resolvedServerId: string | null }
   | { ok: false; message: string };
+
+type BattleMetricsServer = {
+  id?: string;
+  attributes?: {
+    name?: string;
+    ip?: string;
+    port?: number;
+    players?: number;
+    maxPlayers?: number;
+    status?: string;
+    country?: string;
+    details?: {
+      map?: string;
+    };
+  };
+};
+
+function mapLiveStatus(server: BattleMetricsServer, fallbackName: string, playersOnline: string[]): BoosterLiveStatus {
+  const first = server.attributes;
+  return {
+    name: first?.name ?? fallbackName,
+    ip: first?.ip ?? null,
+    port: typeof first?.port === "number" ? first.port : null,
+    status:
+      first?.status === "online" || (first?.status !== "online" && playersOnline.length > 0)
+        ? "online"
+        : "offline",
+    map: first?.details?.map ?? null,
+    players:
+      typeof first?.players === "number" && first.players >= 0
+        ? first.players
+        : playersOnline.length,
+    maxPlayers: typeof first?.maxPlayers === "number" ? first.maxPlayers : null,
+    playersOnline,
+    playersSource: "live",
+    country: first?.country ?? null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+async function fetchServerById(serverId: string, headers: HeadersInit): Promise<{
+  server: BattleMetricsServer;
+  playersOnline: string[];
+} | null> {
+  const response = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, { headers });
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    data?: BattleMetricsServer;
+    included?: Array<{
+      type?: string;
+      attributes?: {
+        name?: string;
+      };
+    }>;
+  };
+
+  if (!payload.data?.attributes) {
+    return null;
+  }
+
+  const playersOnline = (payload.included ?? [])
+    .filter((entry) => entry.type === "player")
+    .map((entry) => entry.attributes?.name?.trim() ?? "")
+    .filter(Boolean);
+
+  return {
+    server: { ...payload.data, id: payload.data.id ?? serverId },
+    playersOnline,
+  };
+}
 
 export const getServerStatus = async ({
   data,
 }: {
-  data: { address: string; game: string };
+  data: { address: string; game: string; serverId?: string };
 }): Promise<BoosterStatusResponse> => {
   try {
     const parsed = serverLookupInput.safeParse(data);
@@ -44,11 +118,22 @@ export const getServerStatus = async ({
     const expectedIp = expectedIpRaw?.trim() || "";
     const expectedPort = Number(expectedPortRaw);
 
+    const serverById = safeData.serverId
+      ? await fetchServerById(safeData.serverId, requestHeaders)
+      : null;
+
+    if (serverById?.server.attributes) {
+      return {
+        ok: true,
+        data: mapLiveStatus(serverById.server, safeData.address, serverById.playersOnline),
+        resolvedServerId: serverById.server.id ?? safeData.serverId ?? null,
+      };
+    }
+
     const queryAttempts = [
       { search: normalizedAddress, includeGame: true },
-      { search: expectedIp, includeGame: true },
       { search: normalizedAddress, includeGame: false },
-      { search: expectedIp, includeGame: false },
+      { search: expectedIp, includeGame: true },
     ].filter((attempt) => attempt.search.length > 0);
 
     const uniqueAttempts = Array.from(
@@ -74,6 +159,11 @@ export const getServerStatus = async ({
       }
     >();
 
+    if (serverById?.server) {
+      const key = serverById.server.id ?? `${serverById.server.attributes?.ip ?? "unknown"}:${String(serverById.server.attributes?.port ?? "")}`;
+      mergedServers.set(key, serverById.server);
+    }
+
     for (const attempt of uniqueAttempts) {
       const query = new URL("https://api.battlemetrics.com/servers");
       query.searchParams.set("filter[search]", attempt.search);
@@ -95,21 +185,7 @@ export const getServerStatus = async ({
       }
 
       const payload = (await response.json()) as {
-        data?: Array<{
-          id?: string;
-          attributes?: {
-            name?: string;
-            ip?: string;
-            port?: number;
-            players?: number;
-            maxPlayers?: number;
-            status?: string;
-            country?: string;
-            details?: {
-              map?: string;
-            };
-          };
-        }>;
+        data?: BattleMetricsServer[];
       };
 
       for (const server of payload.data ?? []) {
@@ -157,88 +233,12 @@ export const getServerStatus = async ({
       return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
     }
 
-    let playersOnline: string[] = [];
-    let playersSource: "live" | "fallback" = "live";
-    if (serverId) {
-      const playersResponse = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, {
-        headers: requestHeaders,
-      });
-
-      if (playersResponse.ok) {
-        const playersPayload = (await playersResponse.json()) as {
-          included?: Array<{
-            type?: string;
-            attributes?: {
-              name?: string;
-            };
-          }>;
-        };
-
-        playersOnline = (playersPayload.included ?? [])
-          .filter((entry) => entry.type === "player")
-          .map((entry) => entry.attributes?.name?.trim() ?? "")
-          .filter(Boolean);
-      }
-
-      if (!playersOnline.length) {
-        const playersListQuery = new URL("https://api.battlemetrics.com/players");
-        playersListQuery.searchParams.set("filter[servers]", serverId);
-        playersListQuery.searchParams.set("page[size]", "100");
-
-        const playersListResponse = await fetch(playersListQuery.toString(), {
-          headers: requestHeaders,
-        });
-
-        if (playersListResponse.ok) {
-          const playersListPayload = (await playersListResponse.json()) as {
-            data?: Array<{
-              attributes?: {
-                name?: string;
-              };
-            }>;
-          };
-
-          const maxPlayersLimit = typeof first.maxPlayers === "number" ? first.maxPlayers : 32;
-          playersOnline = Array.from(
-            new Set(
-              (playersListPayload.data ?? [])
-                .map((entry) => entry.attributes?.name?.trim() ?? "")
-                .filter(Boolean),
-            ),
-          ).slice(0, maxPlayersLimit);
-
-          if (playersOnline.length) {
-            playersSource = "fallback";
-          }
-        }
-      }
-
-    }
-
-    const normalizedStatus =
-      first.status === "online" || (first.status !== "online" && playersOnline.length > 0)
-        ? "online"
-        : "offline";
-    const normalizedPlayers =
-      typeof first.players === "number" && first.players > 0
-        ? first.players
-        : playersOnline.length || (typeof first.players === "number" ? first.players : null);
+    const playersOnline = serverId ? (await fetchServerById(serverId, requestHeaders))?.playersOnline ?? [] : [];
 
     return {
       ok: true,
-      data: {
-        name: first.name ?? safeData.address,
-        ip: first.ip ?? null,
-        port: typeof first.port === "number" ? first.port : null,
-        status: normalizedStatus,
-        map: first.details?.map ?? null,
-        players: normalizedPlayers,
-        maxPlayers: typeof first.maxPlayers === "number" ? first.maxPlayers : null,
-        playersOnline,
-        playersSource,
-        country: first.country ?? null,
-        updatedAt: new Date().toISOString(),
-      },
+      data: mapLiveStatus(matchedServer, safeData.address, playersOnline),
+      resolvedServerId: serverId ?? null,
     };
   } catch {
     return { ok: false, message: "Erro de rede ao consultar servidor" };
