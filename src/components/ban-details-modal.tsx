@@ -29,10 +29,10 @@ function formatDate(value: string | null) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <tr className="border-b border-border/80">
-      <th className="w-56 bg-background px-4 py-3 text-left text-sm font-semibold text-foreground">{label}</th>
-      <td className="bg-background px-4 py-3 text-base text-foreground">{value}</td>
-    </tr>
+    <div className="border-b border-border/80 px-4 py-3 text-base text-foreground">
+      <span className="mr-2 text-sm font-semibold text-muted-foreground">{label}:</span>
+      <span className="font-medium text-foreground">{value}</span>
+    </div>
   );
 }
 
@@ -63,22 +63,20 @@ export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
         </div>
 
         <div className="max-h-[70vh] overflow-auto">
-          <table className="w-full border-separate border-spacing-0">
-            <tbody>
-              <Row label="Nick" value={ban.player_name || "-"} />
-              <Row label="SteamID" value={ban.steam_id || "-"} />
-              <Row label="IP" value={ban.player_ip || "-"} />
-              <Row label="Servidor" value={ban.server || "-"} />
-              <Row label="Motivo" value={ban.reason || "Sem motivo informado"} />
-              <Row label="Banido em" value={formatDate(ban.ban_date)} />
-              <Row label="Expira em" value={ban.unban_time ? formatDate(ban.unban_time) : "Permanente"} />
-              <Row label="Duração" value={getBanDurationLabel(ban.ban_date, ban.unban_time)} />
-              <Row label="Admin" value={ban.banned_by || "-"} />
-              <Row label="Steam admin" value={ban.admin_steamid || "-"} />
-              <Row label="IP admin" value={ban.admin_ip || "-"} />
-              <Row label="Tipo" value={ban.ban_type || "-"} />
-            </tbody>
-          </table>
+          <div className="bg-background">
+            <Row label="Nick" value={ban.player_name || "-"} />
+            <Row label="SteamID" value={ban.steam_id || "-"} />
+            <Row label="IP" value={ban.player_ip || "-"} />
+            <Row label="Servidor" value={ban.server || "-"} />
+            <Row label="Motivo" value={ban.reason || "Sem motivo informado"} />
+            <Row label="Banido em" value={formatDate(ban.ban_date)} />
+            <Row label="Expira em" value={ban.unban_time ? formatDate(ban.unban_time) : "Permanente"} />
+            <Row label="Duração" value={getBanDurationLabel(ban.ban_date, ban.unban_time)} />
+            <Row label="Admin" value={ban.banned_by || "-"} />
+            <Row label="Steam admin" value={ban.admin_steamid || "-"} />
+            <Row label="IP admin" value={ban.admin_ip || "-"} />
+            <Row label="Tipo" value={ban.ban_type || "-"} />
+          </div>
 
           <div className="flex justify-end border-t border-border/80 bg-background px-4 py-3">
             <button onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-lg font-bold text-accent-foreground transition-opacity hover:opacity-90" type="button">
