@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteShell } from "../components/site-shell";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "../lib/supabase";
 import { useAuth } from "../lib/auth";
 import { getServerStatus, type BoosterLiveStatus, type BoosterStatusResponse } from "../lib/booster-status";
@@ -69,10 +69,11 @@ function BoosterPage() {
   const client = supabase as any;
   const { loading: authLoading, user, hasRole } = useAuth();
   const isFounder = hasRole("fundador");
-  const statusCacheKey = "booster-status-cache-v1";
+  const serverIdCacheKey = "booster-server-id-cache-v1";
 
   const [servers, setServers] = useState<BoosterServer[]>([]);
   const [statuses, setStatuses] = useState<Record<string, BoosterLiveStatus>>({});
+  const [serverIdByAddress, setServerIdByAddress] = useState<Record<string, string>>({});
   const [statusNotice, setStatusNotice] = useState<string | null>(null);
   const [loadingServers, setLoadingServers] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
@@ -81,6 +82,7 @@ function BoosterPage() {
   const [gameInput, setGameInput] = useState("cs");
   const [countryInput, setCountryInput] = useState<"BR" | "ES">("BR");
   const [expandedServerId, setExpandedServerId] = useState<string | null>(null);
+  const refreshInFlightRef = useRef(false);
 
   const fetchServers = async () => {
     if (!supabase) {
@@ -108,19 +110,24 @@ function BoosterPage() {
   };
 
   const refreshStatuses = async (currentServers: BoosterServer[]) => {
+      if (refreshInFlightRef.current) {
+        return;
+      }
+
+      refreshInFlightRef.current = true;
       const results = await Promise.allSettled(
         currentServers.map(async (server) => {
           let status: BoosterStatusResponse = { ok: false, message: "Falha ao consultar fonte de status" };
-          for (let attempt = 0; attempt < 2; attempt += 1) {
-            try {
-              const attemptStatus = await getServerStatus({ data: { address: server.address, game: server.game } });
-              status = attemptStatus;
-              if (attemptStatus.ok) {
-                break;
-              }
-            } catch {
-              status = { ok: false, message: "Falha de rede ao consultar status" };
-            }
+          try {
+            status = await getServerStatus({
+              data: {
+                address: server.address,
+                game: server.game,
+                serverId: serverIdByAddress[server.address],
+              },
+            });
+          } catch {
+            status = { ok: false, message: "Falha de rede ao consultar status" };
           }
           return { serverId: server.id, status };
         }),
@@ -146,6 +153,16 @@ function BoosterPage() {
               previous?.status === "online" &&
               (incoming.players ?? 0) === 0 &&
               incoming.playersOnline.length === 0;
+
+            if (item.value.status.resolvedServerId) {
+              setServerIdByAddress((prev) => {
+                if (prev[server.address] === item.value.status.resolvedServerId) {
+                  return prev;
+                }
+
+                return { ...prev, [server.address]: item.value.status.resolvedServerId };
+              });
+            }
 
             if (isWeakOfflineSample && previous) {
               next[item.value.serverId] = {
@@ -219,10 +236,12 @@ function BoosterPage() {
       });
 
     if (failures.length) {
-      setStatusNotice("Alguns servidores não responderam agora; exibindo status offline temporário.");
+      setStatusNotice("Alguns servidores não responderam agora; mantendo último status válido.");
     } else {
       setStatusNotice(null);
     }
+
+    refreshInFlightRef.current = false;
   };
 
   useEffect(() => {
@@ -234,32 +253,32 @@ function BoosterPage() {
       return;
     }
 
-    const cached = window.localStorage.getItem(statusCacheKey);
+    const cached = window.localStorage.getItem(serverIdCacheKey);
     if (!cached) {
       return;
     }
 
     try {
-      const parsed = JSON.parse(cached) as Record<string, BoosterLiveStatus>;
+      const parsed = JSON.parse(cached) as Record<string, string>;
       if (parsed && typeof parsed === "object") {
-        setStatuses((prev) => (Object.keys(prev).length ? prev : parsed));
+        setServerIdByAddress(parsed);
       }
     } catch {
-      window.localStorage.removeItem(statusCacheKey);
+      window.localStorage.removeItem(serverIdCacheKey);
     }
-  }, [statusCacheKey]);
+  }, [serverIdCacheKey]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    if (!Object.keys(statuses).length) {
+    if (!Object.keys(serverIdByAddress).length) {
       return;
     }
 
-    window.localStorage.setItem(statusCacheKey, JSON.stringify(statuses));
-  }, [statuses, statusCacheKey]);
+    window.localStorage.setItem(serverIdCacheKey, JSON.stringify(serverIdByAddress));
+  }, [serverIdByAddress, serverIdCacheKey]);
 
   useEffect(() => {
     if (!servers.length) {
@@ -276,7 +295,7 @@ function BoosterPage() {
 
     const interval = window.setInterval(() => {
       void refreshStatuses(servers);
-    }, 5000);
+    }, 15000);
 
     return () => window.clearInterval(interval);
   }, [servers]);
