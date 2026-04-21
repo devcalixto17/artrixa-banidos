@@ -30,7 +30,7 @@ export const getServerStatus = createServerFn({ method: "GET" })
       const battlemetricsToken =
         (typeof process !== "undefined" ? process.env.BATTLEMETRICS_API_KEY : undefined) ||
         (typeof process !== "undefined" ? process.env.BATTLEMETRICS_TOKEN : undefined);
-      const requestHeaders: HeadersInit = {
+      let requestHeaders: HeadersInit = {
         Accept: "application/json",
         "User-Agent": "Mozilla/5.0 (compatible; BoosterStatus/1.0)",
       };
