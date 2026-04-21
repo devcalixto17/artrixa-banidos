@@ -15,26 +15,28 @@ export function FounderTextEditor() {
   const [historyIndex, setHistoryIndex] = useState(0);
 
   const selectedEntry = useMemo(() => {
-    if (!entries.length) return null;
-    const preferredId = editingEntryId ?? entries[0]?.id;
-    return entries.find((entry) => entry.id === preferredId) ?? entries[0];
+    if (!editingEntryId) {
+      return null;
+    }
+
+    return entries.find((entry) => entry.id === editingEntryId) ?? null;
   }, [entries, editingEntryId]);
 
-  const config = selectedEntry ? getConfig(selectedEntry) : null;
-
   useEffect(() => {
-    if (!config || !editingEntryId) {
+    if (!selectedEntry || !editingEntryId) {
       setDraft(null);
       setOriginalDraft(null);
       setHistory([]);
       setHistoryIndex(0);
       return;
     }
-    setDraft(config);
-    setOriginalDraft(config);
-    setHistory([config]);
+
+    const initialConfig = getConfig(selectedEntry);
+    setDraft(initialConfig);
+    setOriginalDraft(initialConfig);
+    setHistory([initialConfig]);
     setHistoryIndex(0);
-  }, [config, editingEntryId]);
+  }, [selectedEntry, editingEntryId, getConfig]);
 
   const applyDraftChange = (next: Partial<ReturnType<typeof getConfig>>) => {
     if (!selectedEntry) {
