@@ -58,9 +58,11 @@ function BoosterPage() {
   const client = supabase as any;
   const { loading: authLoading, user, hasRole } = useAuth();
   const isFounder = hasRole("fundador");
+  const statusCacheKey = "booster-status-cache-v1";
 
   const [servers, setServers] = useState<BoosterServer[]>([]);
   const [statuses, setStatuses] = useState<Record<string, BoosterLiveStatus>>({});
+  const [statusNotice, setStatusNotice] = useState<string | null>(null);
   const [loadingServers, setLoadingServers] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [labelInput, setLabelInput] = useState("");
@@ -102,6 +104,8 @@ function BoosterPage() {
       }),
     );
 
+    const failures: string[] = [];
+
     setStatuses((prev) => {
       const next = { ...prev };
 
@@ -115,15 +119,64 @@ function BoosterPage() {
           next[item.value.serverId] = item.value.status.data;
           return;
         }
+
+        const serverLabel = server.label;
+        if (item.status === "fulfilled") {
+          failures.push(`${serverLabel}: ${item.value.status.message}`);
+        } else {
+          failures.push(`${serverLabel}: falha de rede ao consultar status`);
+        }
       });
 
       return next;
     });
+
+    if (failures.length) {
+      const preview = failures.slice(0, 2).join(" • ");
+      const remaining = failures.length - 2;
+      setStatusNotice(
+        `Status parcial indisponível: ${preview}${remaining > 0 ? ` • +${remaining} erro(s)` : ""}`,
+      );
+    } else {
+      setStatusNotice(null);
+    }
   };
 
   useEffect(() => {
     void fetchServers();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const cached = window.localStorage.getItem(statusCacheKey);
+    if (!cached) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(cached) as Record<string, BoosterLiveStatus>;
+      if (parsed && typeof parsed === "object") {
+        setStatuses((prev) => (Object.keys(prev).length ? prev : parsed));
+      }
+    } catch {
+      window.localStorage.removeItem(statusCacheKey);
+    }
+  }, [statusCacheKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!Object.keys(statuses).length) {
+      return;
+    }
+
+    window.localStorage.setItem(statusCacheKey, JSON.stringify(statuses));
+  }, [statuses, statusCacheKey]);
 
   useEffect(() => {
     if (!servers.length) {
@@ -212,6 +265,12 @@ function BoosterPage() {
           </div>
           <div className="text-xs text-muted-foreground">Status atualizado ao carregar a página</div>
         </div>
+
+        {statusNotice && (
+          <div className="rounded-md border border-border/70 bg-background/60 px-3 py-2 text-xs text-muted-foreground">
+            {statusNotice}
+          </div>
+        )}
 
         {message && <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted-foreground">{message}</div>}
 
