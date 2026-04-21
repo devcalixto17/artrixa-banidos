@@ -144,7 +144,6 @@ function BoosterPage() {
             const isWeakOfflineSample =
               incoming.status === "offline" &&
               previous?.status === "online" &&
-              !incoming.map &&
               (incoming.players ?? 0) === 0 &&
               incoming.playersOnline.length === 0;
 
@@ -154,6 +153,11 @@ function BoosterPage() {
                 updatedAt: incoming.updatedAt,
               };
             } else if (previous) {
+              const shouldReusePreviousPlayers =
+                incoming.status === "online" &&
+                incoming.playersOnline.length === 0 &&
+                (incoming.players ?? 0) > 0;
+
               next[item.value.serverId] = {
                 ...incoming,
                 name: incoming.name || previous.name,
@@ -168,11 +172,15 @@ function BoosterPage() {
                 playersOnline:
                   incoming.playersOnline.length > 0
                     ? incoming.playersOnline
-                    : previous.playersOnline,
+                    : shouldReusePreviousPlayers
+                      ? previous.playersOnline
+                      : [],
                 playersSource:
                   incoming.playersOnline.length > 0
                     ? incoming.playersSource
-                    : previous.playersSource,
+                    : shouldReusePreviousPlayers
+                      ? previous.playersSource
+                      : incoming.playersSource,
                 country: incoming.country ?? previous.country,
               };
             } else {
