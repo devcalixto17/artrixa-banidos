@@ -15,6 +15,7 @@ export type BoosterLiveStatus = {
   players: number | null;
   maxPlayers: number | null;
   playersOnline: string[];
+  playersSource: "live" | "fallback";
   country: string | null;
   updatedAt: string;
 };
@@ -102,6 +103,7 @@ export const getServerStatus = createServerFn({ method: "GET" })
       }
 
       let playersOnline: string[] = [];
+      let playersSource: "live" | "fallback" = "live";
       if (serverId) {
         const playersResponse = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, {
           headers: requestHeaders,
@@ -123,7 +125,49 @@ export const getServerStatus = createServerFn({ method: "GET" })
             .filter(Boolean);
         }
 
+        if (!playersOnline.length) {
+          const playersListQuery = new URL("https://api.battlemetrics.com/players");
+          playersListQuery.searchParams.set("filter[servers]", serverId);
+          playersListQuery.searchParams.set("page[size]", "100");
+
+          const playersListResponse = await fetch(playersListQuery.toString(), {
+            headers: requestHeaders,
+          });
+
+          if (playersListResponse.ok) {
+            const playersListPayload = (await playersListResponse.json()) as {
+              data?: Array<{
+                attributes?: {
+                  name?: string;
+                };
+              }>;
+            };
+
+            const maxPlayersLimit = typeof first.maxPlayers === "number" ? first.maxPlayers : 32;
+            playersOnline = Array.from(
+              new Set(
+                (playersListPayload.data ?? [])
+                  .map((entry) => entry.attributes?.name?.trim() ?? "")
+                  .filter(Boolean),
+              ),
+            ).slice(0, maxPlayersLimit);
+
+            if (playersOnline.length) {
+              playersSource = "fallback";
+            }
+          }
+        }
+
       }
+
+      const normalizedStatus =
+        first.status === "online" || (first.status !== "online" && playersOnline.length > 0)
+          ? "online"
+          : "offline";
+      const normalizedPlayers =
+        typeof first.players === "number" && first.players > 0
+          ? first.players
+          : playersOnline.length || (typeof first.players === "number" ? first.players : null);
 
       return {
         ok: true,
@@ -131,11 +175,12 @@ export const getServerStatus = createServerFn({ method: "GET" })
           name: first.name ?? data.address,
           ip: first.ip ?? null,
           port: typeof first.port === "number" ? first.port : null,
-          status: first.status === "online" ? "online" : "offline",
+          status: normalizedStatus,
           map: first.details?.map ?? null,
-          players: typeof first.players === "number" ? first.players : null,
+          players: normalizedPlayers,
           maxPlayers: typeof first.maxPlayers === "number" ? first.maxPlayers : null,
           playersOnline,
+          playersSource,
           country: first.country ?? null,
           updatedAt: new Date().toISOString(),
         },
