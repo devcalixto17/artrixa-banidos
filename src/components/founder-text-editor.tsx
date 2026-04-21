@@ -16,10 +16,6 @@ export function FounderTextEditor() {
     return entries.find((entry) => entry.id === preferredId) ?? entries[0];
   }, [entries, editingEntryId]);
 
-  if (!isFounder) {
-    return null;
-  }
-
   const config = selectedEntry ? getConfig(selectedEntry) : null;
 
   useEffect(() => {
@@ -34,6 +30,10 @@ export function FounderTextEditor() {
     setDraft(null);
     closeEditor();
   };
+
+  if (!isFounder) {
+    return null;
+  }
 
   return (
     <aside className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
