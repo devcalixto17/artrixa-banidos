@@ -83,6 +83,7 @@ function BoosterPage() {
   const [countryInput, setCountryInput] = useState<"BR" | "ES">("BR");
   const [expandedServerId, setExpandedServerId] = useState<string | null>(null);
   const refreshInFlightRef = useRef(false);
+  const retryAfterRef = useRef(0);
 
   const fetchServers = async () => {
     if (!supabase) {
@@ -111,6 +112,12 @@ function BoosterPage() {
 
   const refreshStatuses = async (currentServers: BoosterServer[]) => {
       if (refreshInFlightRef.current) {
+        return;
+      }
+
+      if (Date.now() < retryAfterRef.current) {
+        const waitMs = retryAfterRef.current - Date.now();
+        setStatusNotice(`API em limite, nova tentativa em ${Math.ceil(waitMs / 1000)}s.`);
         return;
       }
 
@@ -216,6 +223,10 @@ function BoosterPage() {
           if (item.status === "fulfilled") {
             const errorMessage = item.value.status.ok ? "falha desconhecida" : item.value.status.message;
             failures.push(`${serverLabel}: ${errorMessage}`);
+            if (!item.value.status.ok && item.value.status.rateLimited) {
+              const retryMs = item.value.status.retryAfterMs ?? 15000;
+              retryAfterRef.current = Math.max(retryAfterRef.current, Date.now() + retryMs);
+            }
           } else {
             failures.push(`${serverLabel}: falha de rede ao consultar status`);
           }
@@ -224,8 +235,11 @@ function BoosterPage() {
         return next;
       });
 
-    if (failures.length) {
-      setStatusNotice("A API limitou algumas consultas; mantendo o último status válido.");
+    if (Date.now() < retryAfterRef.current) {
+      const waitMs = retryAfterRef.current - Date.now();
+      setStatusNotice(`API em limite, nova tentativa em ${Math.ceil(waitMs / 1000)}s.`);
+    } else if (failures.length) {
+      setStatusNotice("Falha ao atualizar status em tempo real agora.");
     } else {
       setStatusNotice(null);
     }
@@ -284,7 +298,7 @@ function BoosterPage() {
       return;
     }
 
-    const intervalMs = Math.max(15000, servers.length * 1500);
+    const intervalMs = Math.max(5000, servers.length * 1000);
     const interval = window.setInterval(() => {
       void refreshStatuses(servers);
     }, intervalMs);
