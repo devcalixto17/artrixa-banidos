@@ -116,6 +116,22 @@ function BoosterPage() {
     };
   }, [servers]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const cacheBustKey = "booster-cache-bust-v1";
+    if (window.sessionStorage.getItem(cacheBustKey)) {
+      return;
+    }
+
+    window.sessionStorage.setItem(cacheBustKey, "1");
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set("_refresh", String(Date.now()));
+    window.location.replace(nextUrl.toString());
+  }, []);
+
   const handleAddServer = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!supabase) {
