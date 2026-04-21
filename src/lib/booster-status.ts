@@ -22,7 +22,7 @@ export type BoosterLiveStatus = {
 
 export type BoosterStatusResponse =
   | { ok: true; data: BoosterLiveStatus; resolvedServerId: string | null }
-  | { ok: false; message: string };
+  | { ok: false; message: string; rateLimited?: boolean; retryAfterMs?: number };
 
 type BattleMetricsServer = {
   id?: string;
@@ -95,6 +95,21 @@ async function fetchServerById(serverId: string, headers: HeadersInit): Promise<
     server: { ...payload.data, id: payload.data.id ?? serverId },
     playersOnline,
   };
+}
+
+function parseRetryAfterMs(payload: unknown): number | undefined {
+  const tryAgain =
+    (payload as { errors?: Array<{ meta?: { tryAgain?: string } }> })?.errors?.[0]?.meta?.tryAgain;
+  if (!tryAgain) {
+    return undefined;
+  }
+
+  const target = Date.parse(tryAgain);
+  if (Number.isNaN(target)) {
+    return undefined;
+  }
+
+  return Math.max(0, target - Date.now());
 }
 
 export const getServerStatus = async ({
@@ -177,6 +192,16 @@ export const getServerStatus = async ({
         fallbackQuery.searchParams.set("filter[search]", attempt.search);
         fallbackQuery.searchParams.set("page[size]", "20");
         response = await fetch(fallbackQuery.toString(), { headers: requestHeaders });
+      }
+
+      if (response.status === 429) {
+        const payload = await response.json().catch(() => null);
+        return {
+          ok: false,
+          message: "Limite da API atingido",
+          rateLimited: true,
+          retryAfterMs: parseRetryAfterMs(payload),
+        };
       }
 
       if (!response.ok) {
