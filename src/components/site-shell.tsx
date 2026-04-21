@@ -1,15 +1,15 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { EditableText } from "./editable-text";
 import { FounderTextEditor } from "./founder-text-editor";
 
 type SiteShellProps = {
   title: string;
   subtitle: string;
+  pageKey: string;
   children: React.ReactNode;
 };
 
-export function SiteShell({ title, subtitle, children }: SiteShellProps) {
-  const { pathname } = useLocation();
+export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps) {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-8">
@@ -20,7 +20,7 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
               as="h1"
               className="tracking-wide md:text-3xl"
               entry={{
-                id: `${pathname}-shell-title`,
+                id: `${pageKey}-shell-title`,
                 label: `${title} • título da página`,
                 defaultText: title,
                 defaultConfig: {
@@ -36,7 +36,7 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
               as="p"
               className="mt-1"
               entry={{
-                id: `${pathname}-shell-subtitle`,
+                id: `${pageKey}-shell-subtitle`,
                 label: `${title} • subtítulo da página`,
                 defaultText: subtitle,
                 defaultConfig: {
@@ -59,7 +59,7 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
               <EditableText
                 as="span"
                 entry={{
-                  id: `${pathname}-nav-banidos`,
+                  id: `${pageKey}-nav-banidos`,
                   label: "Menu • Banidos",
                   defaultText: "Banidos",
                   defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
@@ -74,7 +74,7 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
               <EditableText
                 as="span"
                 entry={{
-                  id: `${pathname}-nav-suporte`,
+                  id: `${pageKey}-nav-suporte`,
                   label: "Menu • Suporte",
                   defaultText: "Suporte",
                   defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
@@ -89,7 +89,7 @@ export function SiteShell({ title, subtitle, children }: SiteShellProps) {
               <EditableText
                 as="span"
                 entry={{
-                  id: `${pathname}-nav-booster`,
+                  id: `${pageKey}-nav-booster`,
                   label: "Menu • Booster",
                   defaultText: "Booster",
                   defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
