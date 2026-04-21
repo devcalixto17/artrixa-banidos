@@ -77,7 +77,7 @@ export function FounderTextEditor() {
 
       {editingEntryId && selectedEntry && draft && (
         <>
-          <div className="fixed inset-0 z-40 bg-background/75 backdrop-blur-sm" onClick={closeModal} />
+          <div className="fixed inset-0 z-40 bg-background/40" onClick={closeModal} />
           <div className="panel fixed left-1/2 top-1/2 z-50 w-[min(92vw,380px)] -translate-x-1/2 -translate-y-1/2 space-y-3 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Editor de texto (fundador)</p>
             <p className="text-sm text-foreground">{selectedEntry.label}</p>
@@ -86,7 +86,7 @@ export function FounderTextEditor() {
                 Texto
                 <input
                   value={draft.text}
-                  onChange={(event) => setDraft((prev) => (prev ? { ...prev, text: event.target.value } : prev))}
+                  onChange={(event) => applyDraftChange({ text: event.target.value })}
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none ring-ring focus:ring-2"
                 />
               </label>
@@ -97,7 +97,7 @@ export function FounderTextEditor() {
                   <input
                     type="color"
                     value={draft.color}
-                    onChange={(event) => setDraft((prev) => (prev ? { ...prev, color: event.target.value } : prev))}
+                    onChange={(event) => applyDraftChange({ color: event.target.value })}
                     className="h-10 w-full rounded-lg border border-input bg-background p-1"
                   />
                 </label>
@@ -108,7 +108,7 @@ export function FounderTextEditor() {
                     min={14}
                     max={72}
                     value={draft.size}
-                    onChange={(event) => setDraft((prev) => (prev ? { ...prev, size: Number(event.target.value) } : prev))}
+                    onChange={(event) => applyDraftChange({ size: Number(event.target.value) })}
                     className="h-10 w-full"
                   />
                 </label>
@@ -118,7 +118,7 @@ export function FounderTextEditor() {
                 Fonte
                 <select
                   value={draft.font}
-                  onChange={(event) => setDraft((prev) => (prev ? { ...prev, font: event.target.value } : prev))}
+                  onChange={(event) => applyDraftChange({ font: event.target.value })}
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none ring-ring focus:ring-2"
                 >
                   {FONT_OPTIONS.map((font) => (
@@ -133,21 +133,21 @@ export function FounderTextEditor() {
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => setDraft((prev) => (prev ? { ...prev, weight: "500" } : prev))}
+                  onClick={() => applyDraftChange({ weight: "500" })}
                 >
                   Leve
                 </button>
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => setDraft((prev) => (prev ? { ...prev, weight: "700" } : prev))}
+                  onClick={() => applyDraftChange({ weight: "700" })}
                 >
                   Forte
                 </button>
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => setDraft((prev) => (prev ? { ...prev, weight: "800" } : prev))}
+                  onClick={() => applyDraftChange({ weight: "800" })}
                 >
                   Extra
                 </button>
@@ -157,14 +157,14 @@ export function FounderTextEditor() {
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => setDraft((prev) => (prev ? { ...prev, italic: !prev.italic } : prev))}
+                  onClick={() => applyDraftChange({ italic: !draft.italic })}
                 >
                   Itálico
                 </button>
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => setDraft((prev) => (prev ? { ...prev, uppercase: !prev.uppercase } : prev))}
+                  onClick={() => applyDraftChange({ uppercase: !draft.uppercase })}
                 >
                   MAIÚSCULO
                 </button>
@@ -176,7 +176,7 @@ export function FounderTextEditor() {
                   <button
                     type="button"
                     className="action-button"
-                    onClick={() => setDraft((prev) => (prev ? { ...prev, glow: !prev.glow } : prev))}
+                    onClick={() => applyDraftChange({ glow: !draft.glow })}
                   >
                     {draft.glow ? "Ativo" : "Desligado"}
                   </button>
@@ -185,7 +185,7 @@ export function FounderTextEditor() {
                   <input
                     type="color"
                     value={draft.glowColor}
-                    onChange={(event) => setDraft((prev) => (prev ? { ...prev, glowColor: event.target.value } : prev))}
+                    onChange={(event) => applyDraftChange({ glowColor: event.target.value })}
                     className="h-10 w-full rounded-lg border border-input bg-background p-1"
                   />
                   <input
@@ -193,9 +193,7 @@ export function FounderTextEditor() {
                     min={6}
                     max={40}
                     value={draft.glowIntensity}
-                    onChange={(event) =>
-                      setDraft((prev) => (prev ? { ...prev, glowIntensity: Number(event.target.value) } : prev))
-                    }
+                    onChange={(event) => applyDraftChange({ glowIntensity: Number(event.target.value) })}
                     className="h-10 w-full"
                   />
                 </div>
@@ -212,7 +210,16 @@ export function FounderTextEditor() {
               >
                 Salvar
               </button>
-              <button type="button" className="action-button flex-1" onClick={closeModal}>
+              <button
+                type="button"
+                className="action-button flex-1"
+                onClick={() => {
+                  if (originalDraft) {
+                    updateEntry(selectedEntry.id, originalDraft);
+                  }
+                  closeModal();
+                }}
+              >
                 Cancelar
               </button>
             </div>
