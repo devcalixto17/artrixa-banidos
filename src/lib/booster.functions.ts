@@ -27,10 +27,15 @@ export const getServerStatus = createServerFn({ method: "GET" })
   .inputValidator(serverLookupInput)
   .handler(async ({ data }): Promise<BoosterStatusResponse> => {
     try {
+      const normalizedAddress = data.address.trim();
+      const [expectedIpRaw, expectedPortRaw] = normalizedAddress.split(":");
+      const expectedIp = expectedIpRaw?.trim() || "";
+      const expectedPort = Number(expectedPortRaw);
+
       const query = new URL("https://api.battlemetrics.com/servers");
       query.searchParams.set("filter[search]", data.address);
       query.searchParams.set("filter[game]", data.game);
-      query.searchParams.set("page[size]", "1");
+      query.searchParams.set("page[size]", "20");
 
       const response = await fetch(query.toString(), {
         headers: {
@@ -60,10 +65,23 @@ export const getServerStatus = createServerFn({ method: "GET" })
         }>;
       };
 
-      const first = payload.data?.[0]?.attributes;
-      const serverId = payload.data?.[0]?.id;
+      const matchedServer = (payload.data ?? []).find((entry) => {
+        const attrs = entry.attributes;
+        if (!attrs?.ip || typeof attrs.port !== "number") {
+          return false;
+        }
+
+        if (!expectedIp || Number.isNaN(expectedPort)) {
+          return true;
+        }
+
+        return attrs.ip === expectedIp && attrs.port === expectedPort;
+      });
+
+      const first = matchedServer?.attributes;
+      const serverId = matchedServer?.id;
       if (!first) {
-        return { ok: false, message: "Servidor não encontrado" };
+        return { ok: false, message: "Servidor não encontrado para o IP:PORTA informado" };
       }
 
       let playersOnline: string[] = [];
