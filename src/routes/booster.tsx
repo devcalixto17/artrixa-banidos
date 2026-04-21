@@ -269,6 +269,18 @@ function BoosterPage() {
     void refreshStatuses(servers);
   }, [servers]);
 
+  useEffect(() => {
+    if (!servers.length) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      void refreshStatuses(servers);
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [servers]);
+
   const handleAddServer = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!supabase) {
@@ -330,7 +342,7 @@ function BoosterPage() {
           <div className="text-muted-foreground">
             Total: <span className="font-semibold text-foreground">{servers.length}</span> servidores • Online: <span className="font-semibold text-foreground">{onlineCount}</span>
           </div>
-          <div className="text-xs text-muted-foreground">Status atualizado ao carregar a página</div>
+          <div className="text-xs text-muted-foreground">Atualização automática a cada 5s</div>
         </div>
 
         {statusNotice && (
