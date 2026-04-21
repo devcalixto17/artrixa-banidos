@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient, getSupabaseConfig, type BanRecord } from "../lib/supabase";
 import { BanDetailsModal } from "./ban-details-modal";
+import { EditableText } from "./editable-text";
 
 const PAGE_SIZE = 10;
 
@@ -151,9 +152,22 @@ export function BanidosTable() {
       <div className="flex flex-col gap-4 border-b border-border/80 p-5 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold uppercase tracking-[0.16em] text-foreground" style={{ fontFamily: '"Orbitron", "Exo 2", sans-serif' }}>
-            Lista de Banidos
+            <EditableText
+              as="span"
+              entry={{ id: "banidos-list-title", label: "Banidos • título da lista", defaultText: "Lista de Banidos" }}
+            />
           </h2>
-          <p className="text-sm text-muted-foreground">Atualização automática em tempo real + refresh a cada 15s</p>
+          <p className="text-sm text-muted-foreground">
+            <EditableText
+              as="span"
+              entry={{
+                id: "banidos-list-subtitle",
+                label: "Banidos • subtítulo da lista",
+                defaultText: "Atualização automática em tempo real + refresh a cada 15s",
+                defaultConfig: { uppercase: false, font: "Exo 2", size: 14, weight: "500" },
+              }}
+            />
+          </p>
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">

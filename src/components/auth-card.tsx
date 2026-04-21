@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../lib/auth";
+import { EditableText } from "./editable-text";
 
 export function AuthCard() {
   const { signIn, signUp } = useAuth();
@@ -32,9 +33,22 @@ export function AuthCard() {
   return (
     <section className="panel space-y-4 p-5">
       <div>
-        <h2 className="text-base font-bold uppercase tracking-wide">Entrar no painel</h2>
+        <h2 className="text-base font-bold uppercase tracking-wide">
+          <EditableText
+            as="span"
+            entry={{ id: "auth-title", label: "Auth • título", defaultText: "Entrar no painel" }}
+          />
+        </h2>
         <p className="text-xs text-muted-foreground">
-          Fundador/Admin podem configurar a conexão; Usuário vê banimentos gerais.
+          <EditableText
+            as="span"
+            entry={{
+              id: "auth-subtitle",
+              label: "Auth • descrição",
+              defaultText: "Fundador/Admin podem configurar a conexão; Usuário vê banimentos gerais.",
+              defaultConfig: { uppercase: false, font: "Exo 2", size: 13, weight: "500" },
+            }}
+          />
         </p>
       </div>
 
@@ -47,7 +61,7 @@ export function AuthCard() {
             setMessage(null);
           }}
         >
-          Login
+          <EditableText as="span" entry={{ id: "auth-login", label: "Auth • botão login", defaultText: "Login" }} />
         </button>
         <button
           type="button"
@@ -57,7 +71,10 @@ export function AuthCard() {
             setMessage(null);
           }}
         >
-          Cadastro
+          <EditableText
+            as="span"
+            entry={{ id: "auth-register", label: "Auth • botão cadastro", defaultText: "Cadastro" }}
+          />
         </button>
       </div>
 

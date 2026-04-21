@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { clearSupabaseConfig, getSupabaseConfig, saveSupabaseConfig } from "../lib/supabase";
+import { EditableText } from "./editable-text";
 
 export function SupabaseConfigCard() {
   const current = useMemo(() => getSupabaseConfig(), []);
@@ -11,8 +12,20 @@ export function SupabaseConfigCard() {
   return (
     <section className="panel space-y-4 p-4">
       <div>
-        <h2 className="text-base font-bold uppercase tracking-wide">Conexão Supabase</h2>
-        <p className="text-xs text-muted-foreground">Cole abaixo a URL, anon key e nome da tabela de banidos.</p>
+        <h2 className="text-base font-bold uppercase tracking-wide">
+          <EditableText as="span" entry={{ id: "config-title", label: "Configuração • título", defaultText: "Conexão Supabase" }} />
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          <EditableText
+            as="span"
+            entry={{
+              id: "config-subtitle",
+              label: "Configuração • descrição",
+              defaultText: "Cole abaixo a URL, anon key e nome da tabela de banidos.",
+              defaultConfig: { uppercase: false, font: "Exo 2", size: 13, weight: "500" },
+            }}
+          />
+        </p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
@@ -54,7 +67,7 @@ export function SupabaseConfigCard() {
             setMessage("Dados salvos. Atualizando listagem...");
           }}
         >
-          Salvar conexão
+          <EditableText as="span" entry={{ id: "config-save", label: "Configuração • botão salvar", defaultText: "Salvar conexão" }} />
         </button>
         <button
           type="button"
@@ -67,7 +80,7 @@ export function SupabaseConfigCard() {
             setMessage("Conexão limpa.");
           }}
         >
-          Limpar
+          <EditableText as="span" entry={{ id: "config-clear", label: "Configuração • botão limpar", defaultText: "Limpar" }} />
         </button>
       </div>
 
