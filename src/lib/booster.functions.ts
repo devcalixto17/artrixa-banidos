@@ -14,6 +14,7 @@ export type BoosterLiveStatus = {
   map: string | null;
   players: number | null;
   maxPlayers: number | null;
+  playersOnline: string[];
   country: string | null;
   updatedAt: string;
 };
@@ -43,6 +44,7 @@ export const getServerStatus = createServerFn({ method: "GET" })
 
       const payload = (await response.json()) as {
         data?: Array<{
+          id?: string;
           attributes?: {
             name?: string;
             ip?: string;
@@ -59,8 +61,32 @@ export const getServerStatus = createServerFn({ method: "GET" })
       };
 
       const first = payload.data?.[0]?.attributes;
+      const serverId = payload.data?.[0]?.id;
       if (!first) {
         return { ok: false, message: "Servidor não encontrado" };
+      }
+
+      let playersOnline: string[] = [];
+      if (serverId) {
+        const playersResponse = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, {
+          headers: { Accept: "application/json" },
+        });
+
+        if (playersResponse.ok) {
+          const playersPayload = (await playersResponse.json()) as {
+            included?: Array<{
+              type?: string;
+              attributes?: {
+                name?: string;
+              };
+            }>;
+          };
+
+          playersOnline = (playersPayload.included ?? [])
+            .filter((entry) => entry.type === "player")
+            .map((entry) => entry.attributes?.name?.trim() ?? "")
+            .filter(Boolean);
+        }
       }
 
       return {
@@ -73,6 +99,7 @@ export const getServerStatus = createServerFn({ method: "GET" })
           map: first.details?.map ?? null,
           players: typeof first.players === "number" ? first.players : null,
           maxPlayers: typeof first.maxPlayers === "number" ? first.maxPlayers : null,
+          playersOnline,
           country: first.country ?? null,
           updatedAt: new Date().toISOString(),
         },
