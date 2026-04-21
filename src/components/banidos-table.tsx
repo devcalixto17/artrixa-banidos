@@ -146,8 +146,7 @@ export function BanidosTable() {
   }, [filtered, page]);
 
   return (
-    <>
-      <section className="panel overflow-hidden border-primary/40 bg-card/90 shadow-2xl shadow-primary/20">
+    <section className="panel overflow-hidden border-primary/40 bg-card/90 shadow-2xl shadow-primary/20">
       <div className="flex flex-col gap-4 border-b border-border/80 p-5 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold uppercase tracking-[0.16em] text-foreground" style={{ fontFamily: '"Orbitron", "Exo 2", sans-serif' }}>
@@ -279,9 +278,7 @@ export function BanidosTable() {
         </div>
       </div>
 
-      </section>
-
       {selected && <BanDetailsModal ban={selected} onClose={() => setSelected(null)} />}
-    </>
+    </section>
   );
 }
