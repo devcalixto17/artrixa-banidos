@@ -79,7 +79,7 @@ export function BanDetailsModal({ ban, onClose }: BanDetailsModalProps) {
           </div>
 
           <div className="flex justify-end border-t border-border/80 bg-background px-4 py-3">
-            <button onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-lg font-bold text-accent-foreground transition-opacity hover:opacity-90" type="button">
+            <button onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-lg font-bold text-accent-foreground transition-all hover:brightness-75" type="button">
               × Fechar
             </button>
           </div>
