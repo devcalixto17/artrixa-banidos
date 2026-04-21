@@ -25,6 +25,11 @@ type TextCustomizationContextValue = {
   registerEntry: (entry: EditableTextEntry) => void;
   getConfig: (entry: EditableTextEntry) => EditableTextConfig;
   updateEntry: (entryId: string, next: Partial<EditableTextConfig>) => void;
+  selectionMode: boolean;
+  setSelectionMode: (enabled: boolean) => void;
+  editingEntryId: string | null;
+  openEditorFor: (entryId: string) => void;
+  closeEditor: () => void;
 };
 
 const defaultConfig: EditableTextConfig = {
@@ -47,6 +52,8 @@ const TextCustomizationContext = createContext<TextCustomizationContextValue | n
 export function TextCustomizationProvider({ children }: { children: React.ReactNode }) {
   const [entries, setEntries] = useState<EditableTextEntry[]>([]);
   const [configs, setConfigs] = useState<Record<string, Partial<EditableTextConfig>>>({});
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -104,14 +111,28 @@ export function TextCustomizationProvider({ children }: { children: React.ReactN
     }));
   };
 
+  const openEditorFor = (entryId: string) => {
+    setEditingEntryId(entryId);
+    setSelectionMode(false);
+  };
+
+  const closeEditor = () => {
+    setEditingEntryId(null);
+  };
+
   const value = useMemo<TextCustomizationContextValue>(
     () => ({
       entries,
       registerEntry,
       getConfig,
       updateEntry,
+      selectionMode,
+      setSelectionMode,
+      editingEntryId,
+      openEditorFor,
+      closeEditor,
     }),
-    [entries, configs],
+    [entries, configs, selectionMode, editingEntryId],
   );
 
   return <TextCustomizationContext.Provider value={value}>{children}</TextCustomizationContext.Provider>;
