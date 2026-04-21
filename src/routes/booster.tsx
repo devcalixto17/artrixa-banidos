@@ -81,7 +81,6 @@ function BoosterPage() {
   const [gameInput, setGameInput] = useState("cs");
   const [countryInput, setCountryInput] = useState<"BR" | "ES">("BR");
   const [expandedServerId, setExpandedServerId] = useState<string | null>(null);
-  const [refreshingStatuses, setRefreshingStatuses] = useState(false);
 
   const fetchServers = async () => {
     if (!supabase) {
@@ -109,8 +108,6 @@ function BoosterPage() {
   };
 
   const refreshStatuses = async (currentServers: BoosterServer[]) => {
-    setRefreshingStatuses(true);
-    try {
       const results = await Promise.allSettled(
         currentServers.map(async (server) => {
           let status: BoosterStatusResponse = { ok: false, message: "Falha ao consultar fonte de status" };
@@ -213,13 +210,10 @@ function BoosterPage() {
         return next;
       });
 
-      if (failures.length) {
-        setStatusNotice("Alguns servidores não responderam agora; exibindo status offline temporário.");
-      } else {
-        setStatusNotice(null);
-      }
-    } finally {
-      setRefreshingStatuses(false);
+    if (failures.length) {
+      setStatusNotice("Alguns servidores não responderam agora; exibindo status offline temporário.");
+    } else {
+      setStatusNotice(null);
     }
   };
 
@@ -265,18 +259,6 @@ function BoosterPage() {
     }
 
     void refreshStatuses(servers);
-  }, [servers]);
-
-  useEffect(() => {
-    if (!servers.length) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      void refreshStatuses(servers);
-    }, 12000);
-
-    return () => window.clearInterval(interval);
   }, [servers]);
 
   const handleAddServer = async (event: React.FormEvent) => {
@@ -340,17 +322,7 @@ function BoosterPage() {
           <div className="text-muted-foreground">
             Total: <span className="font-semibold text-foreground">{servers.length}</span> servidores • Online: <span className="font-semibold text-foreground">{onlineCount}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="action-button"
-              onClick={() => void refreshStatuses(servers)}
-              disabled={refreshingStatuses || !servers.length}
-            >
-              {refreshingStatuses ? "Atualizando..." : "Atualizar status"}
-            </button>
-            <div className="text-xs text-muted-foreground">Atualização automática em tempo real</div>
-          </div>
+          <div className="text-xs text-muted-foreground">Status atualizado ao carregar a página</div>
         </div>
 
         {statusNotice && (
