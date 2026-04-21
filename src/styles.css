@@ -61,6 +61,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-status-online: var(--status-online);
+  --color-status-temporary: var(--status-temporary);
   --color-status-offline: var(--status-offline);
 }
 
@@ -99,6 +100,7 @@
   --sidebar-border: oklch(0.4 0.08 272);
   --sidebar-ring: oklch(0.68 0.2 292);
   --status-online: oklch(0.72 0.2 148);
+  --status-temporary: oklch(0.74 0.17 62);
   --status-offline: oklch(0.62 0.02 265);
 }
 
@@ -136,6 +138,7 @@
   --sidebar-border: oklch(0.4 0.08 272);
   --sidebar-ring: oklch(0.68 0.2 292);
   --status-online: oklch(0.72 0.2 148);
+  --status-temporary: oklch(0.74 0.17 62);
   --status-offline: oklch(0.62 0.02 265);
 }
 
