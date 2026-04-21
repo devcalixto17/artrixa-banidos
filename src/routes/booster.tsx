@@ -365,6 +365,13 @@ function BoosterPage() {
               const status = statuses[server.id];
               const isOnline = status?.status === "online";
               const hasLiveStatus = Boolean(status);
+              const statusLabel = hasLiveStatus
+                ? isOnline
+                  ? "Online"
+                  : "Offline"
+                : statusNotice
+                  ? "Indisponível"
+                  : "Conectando";
               const isExpanded = expandedServerId === server.id;
               const country = COUNTRY_FLAGS[server.country];
               const steamConnectUrl = `steam://connect/${server.address}`;
@@ -419,7 +426,7 @@ function BoosterPage() {
                             : "var(--color-muted-foreground)",
                         }}
                       >
-                        {hasLiveStatus ? (isOnline ? "Online" : "Offline") : "Conectando"}
+                        {statusLabel}
                       </span>
                       <a href={steamConnectUrl} className="action-button gap-2" title={`Conectar em ${server.address}`}>
                         <img src={steamIcon} alt="Steam" className="h-4 w-4 rounded-full" loading="lazy" />
