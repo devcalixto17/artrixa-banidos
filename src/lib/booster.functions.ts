@@ -27,6 +27,20 @@ export const getServerStatus = createServerFn({ method: "GET" })
   .inputValidator(serverLookupInput)
   .handler(async ({ data }): Promise<BoosterStatusResponse> => {
     try {
+      const battlemetricsToken =
+        (typeof process !== "undefined" ? process.env.BATTLEMETRICS_API_KEY : undefined) ||
+        (typeof process !== "undefined" ? process.env.BATTLEMETRICS_TOKEN : undefined);
+      let requestHeaders: HeadersInit = {
+        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; BoosterStatus/1.0)",
+      };
+      if (battlemetricsToken) {
+        requestHeaders = {
+          ...requestHeaders,
+          Authorization: `Bearer ${battlemetricsToken}`,
+        };
+      }
+
       const normalizedAddress = data.address.trim();
       const [expectedIpRaw, expectedPortRaw] = normalizedAddress.split(":");
       const expectedIp = expectedIpRaw?.trim() || "";
@@ -37,11 +51,14 @@ export const getServerStatus = createServerFn({ method: "GET" })
       query.searchParams.set("filter[game]", data.game);
       query.searchParams.set("page[size]", "20");
 
-      const response = await fetch(query.toString(), {
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      let response = await fetch(query.toString(), { headers: requestHeaders });
+
+      if (response.status === 403) {
+        const fallbackQuery = new URL("https://api.battlemetrics.com/servers");
+        fallbackQuery.searchParams.set("filter[search]", data.address);
+        fallbackQuery.searchParams.set("page[size]", "20");
+        response = await fetch(fallbackQuery.toString(), { headers: requestHeaders });
+      }
 
       if (!response.ok) {
         return { ok: false, message: `Falha na consulta (${response.status})` };
@@ -87,7 +104,7 @@ export const getServerStatus = createServerFn({ method: "GET" })
       let playersOnline: string[] = [];
       if (serverId) {
         const playersResponse = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, {
-          headers: { Accept: "application/json" },
+          headers: requestHeaders,
         });
 
         if (playersResponse.ok) {
