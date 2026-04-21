@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useTextCustomization } from "../lib/text-customization";
 
@@ -6,57 +6,58 @@ const FONT_OPTIONS = ["Orbitron", "Exo 2", "Rajdhani", "Teko", "Audiowide"];
 
 export function FounderTextEditor() {
   const { hasRole } = useAuth();
-  const { entries, getConfig, updateEntry } = useTextCustomization();
+  const { entries, getConfig, updateEntry, selectionMode, setSelectionMode, editingEntryId, closeEditor } = useTextCustomization();
   const isFounder = hasRole("fundador");
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<ReturnType<typeof getConfig> | null>(null);
 
   const selectedEntry = useMemo(() => {
     if (!entries.length) return null;
-    const preferredId = selectedId ?? entries[0]?.id;
+    const preferredId = editingEntryId ?? entries[0]?.id;
     return entries.find((entry) => entry.id === preferredId) ?? entries[0];
-  }, [entries, selectedId]);
+  }, [entries, editingEntryId]);
+
+  const config = selectedEntry ? getConfig(selectedEntry) : null;
+
+  useEffect(() => {
+    if (!config || !editingEntryId) {
+      setDraft(null);
+      return;
+    }
+    setDraft(config);
+  }, [config, editingEntryId]);
+
+  const closeModal = () => {
+    setDraft(null);
+    closeEditor();
+  };
 
   if (!isFounder) {
     return null;
   }
 
-  const config = selectedEntry ? getConfig(selectedEntry) : null;
-
   return (
     <aside className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      <button type="button" className="action-button" onClick={() => setOpen((prev) => !prev)}>
-        {open ? "Fechar editor" : "Editar textos"}
+      <button type="button" className="action-button" onClick={() => setSelectionMode(!selectionMode)}>
+        {selectionMode ? "Selecionando texto..." : "Editar textos"}
       </button>
 
-      {open && (
+      {selectionMode && (
+        <div className="panel w-[min(92vw,360px)] space-y-2 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Modo seleção ativo</p>
+          <p className="text-sm text-muted-foreground">Clique no texto da página que você quer editar.</p>
+        </div>
+      )}
+
+      {editingEntryId && selectedEntry && draft && (
         <div className="panel w-[min(92vw,360px)] space-y-3 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Editor de texto (fundador)</p>
-
-          {!selectedEntry || !config ? (
-            <p className="text-sm text-muted-foreground">Nenhum texto disponível nesta tela.</p>
-          ) : (
-            <>
-              <label className="space-y-1 text-xs text-muted-foreground">
-                Área de texto
-                <select
-                  value={selectedEntry.id}
-                  onChange={(event) => setSelectedId(event.target.value)}
-                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none ring-ring focus:ring-2"
-                >
-                  {entries.map((entry) => (
-                    <option key={entry.id} value={entry.id}>
-                      {entry.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+          <p className="text-sm text-foreground">{selectedEntry.label}</p>
 
               <label className="space-y-1 text-xs text-muted-foreground">
                 Texto
                 <input
-                  value={config.text}
-                  onChange={(event) => updateEntry(selectedEntry.id, { text: event.target.value })}
+                  value={draft.text}
+                  onChange={(event) => setDraft((prev) => (prev ? { ...prev, text: event.target.value } : prev))}
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none ring-ring focus:ring-2"
                 />
               </label>
@@ -66,19 +67,19 @@ export function FounderTextEditor() {
                   Cor
                   <input
                     type="color"
-                    value={config.color}
-                    onChange={(event) => updateEntry(selectedEntry.id, { color: event.target.value })}
+                    value={draft.color}
+                    onChange={(event) => setDraft((prev) => (prev ? { ...prev, color: event.target.value } : prev))}
                     className="h-10 w-full rounded-lg border border-input bg-background p-1"
                   />
                 </label>
                 <label className="space-y-1 text-xs text-muted-foreground">
-                  Tamanho ({config.size}px)
+                  Tamanho ({draft.size}px)
                   <input
                     type="range"
                     min={14}
                     max={72}
-                    value={config.size}
-                    onChange={(event) => updateEntry(selectedEntry.id, { size: Number(event.target.value) })}
+                    value={draft.size}
+                    onChange={(event) => setDraft((prev) => (prev ? { ...prev, size: Number(event.target.value) } : prev))}
                     className="h-10 w-full"
                   />
                 </label>
@@ -87,8 +88,8 @@ export function FounderTextEditor() {
               <label className="space-y-1 text-xs text-muted-foreground">
                 Fonte
                 <select
-                  value={config.font}
-                  onChange={(event) => updateEntry(selectedEntry.id, { font: event.target.value })}
+                  value={draft.font}
+                  onChange={(event) => setDraft((prev) => (prev ? { ...prev, font: event.target.value } : prev))}
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none ring-ring focus:ring-2"
                 >
                   {FONT_OPTIONS.map((font) => (
@@ -103,21 +104,21 @@ export function FounderTextEditor() {
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => updateEntry(selectedEntry.id, { weight: "500" })}
+                  onClick={() => setDraft((prev) => (prev ? { ...prev, weight: "500" } : prev))}
                 >
                   Leve
                 </button>
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => updateEntry(selectedEntry.id, { weight: "700" })}
+                  onClick={() => setDraft((prev) => (prev ? { ...prev, weight: "700" } : prev))}
                 >
                   Forte
                 </button>
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => updateEntry(selectedEntry.id, { weight: "800" })}
+                  onClick={() => setDraft((prev) => (prev ? { ...prev, weight: "800" } : prev))}
                 >
                   Extra
                 </button>
@@ -127,14 +128,14 @@ export function FounderTextEditor() {
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => updateEntry(selectedEntry.id, { italic: !config.italic })}
+                  onClick={() => setDraft((prev) => (prev ? { ...prev, italic: !prev.italic } : prev))}
                 >
                   Itálico
                 </button>
                 <button
                   type="button"
                   className="action-button"
-                  onClick={() => updateEntry(selectedEntry.id, { uppercase: !config.uppercase })}
+                  onClick={() => setDraft((prev) => (prev ? { ...prev, uppercase: !prev.uppercase } : prev))}
                 >
                   MAIÚSCULO
                 </button>
@@ -146,30 +147,46 @@ export function FounderTextEditor() {
                   <button
                     type="button"
                     className="action-button"
-                    onClick={() => updateEntry(selectedEntry.id, { glow: !config.glow })}
+                    onClick={() => setDraft((prev) => (prev ? { ...prev, glow: !prev.glow } : prev))}
                   >
-                    {config.glow ? "Ativo" : "Desligado"}
+                    {draft.glow ? "Ativo" : "Desligado"}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="color"
-                    value={config.glowColor}
-                    onChange={(event) => updateEntry(selectedEntry.id, { glowColor: event.target.value })}
+                    value={draft.glowColor}
+                    onChange={(event) => setDraft((prev) => (prev ? { ...prev, glowColor: event.target.value } : prev))}
                     className="h-10 w-full rounded-lg border border-input bg-background p-1"
                   />
                   <input
                     type="range"
                     min={6}
                     max={40}
-                    value={config.glowIntensity}
-                    onChange={(event) => updateEntry(selectedEntry.id, { glowIntensity: Number(event.target.value) })}
+                    value={draft.glowIntensity}
+                    onChange={(event) =>
+                      setDraft((prev) => (prev ? { ...prev, glowIntensity: Number(event.target.value) } : prev))
+                    }
                     className="h-10 w-full"
                   />
                 </div>
               </div>
-            </>
-          )}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              className="action-button flex-1"
+              onClick={() => {
+                updateEntry(selectedEntry.id, draft);
+                closeModal();
+              }}
+            >
+              Salvar
+            </button>
+            <button type="button" className="action-button flex-1" onClick={closeModal}>
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
     </aside>
