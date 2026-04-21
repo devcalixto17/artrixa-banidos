@@ -53,6 +53,17 @@ function mapServerRow(raw: Record<string, unknown>): BoosterServer {
   };
 }
 
+function parseAddress(address: string) {
+  const [rawIp, rawPort] = address.split(":");
+  const ip = rawIp?.trim() || null;
+  const parsedPort = Number(rawPort);
+
+  return {
+    ip,
+    port: Number.isFinite(parsedPort) ? parsedPort : null,
+  };
+}
+
 function BoosterPage() {
   const supabase = getSupabaseClient();
   const client = supabase as any;
@@ -131,6 +142,21 @@ function BoosterPage() {
           return;
         }
 
+        const { ip, port } = parseAddress(server.address);
+        next[server.id] = {
+          name: server.label,
+          ip,
+          port,
+          status: "offline",
+          map: null,
+          players: 0,
+          maxPlayers: null,
+          playersOnline: [],
+          playersSource: "fallback",
+          country: null,
+          updatedAt: new Date().toISOString(),
+        };
+
         const serverLabel = server.label;
         if (item.status === "fulfilled") {
           const errorMessage = item.value.status.ok ? "falha desconhecida" : item.value.status.message;
@@ -144,11 +170,7 @@ function BoosterPage() {
     });
 
     if (failures.length) {
-      const preview = failures.slice(0, 2).join(" • ");
-      const remaining = failures.length - 2;
-      setStatusNotice(
-        `Status parcial indisponível: ${preview}${remaining > 0 ? ` • +${remaining} erro(s)` : ""}`,
-      );
+      setStatusNotice("Alguns servidores não responderam agora; exibindo status offline temporário.");
     } else {
       setStatusNotice(null);
     }
