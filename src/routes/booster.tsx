@@ -122,7 +122,8 @@ function BoosterPage() {
 
         const serverLabel = server.label;
         if (item.status === "fulfilled") {
-          failures.push(`${serverLabel}: ${item.value.status.message}`);
+          const errorMessage = item.value.status.ok ? "falha desconhecida" : item.value.status.message;
+          failures.push(`${serverLabel}: ${errorMessage}`);
         } else {
           failures.push(`${serverLabel}: falha de rede ao consultar status`);
         }
