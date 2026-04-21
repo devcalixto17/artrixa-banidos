@@ -22,8 +22,10 @@ export function FounderTextEditor() {
     return entries.find((entry) => entry.id === editingEntryId) ?? null;
   }, [entries, editingEntryId]);
 
+  const selectedEntryId = selectedEntry?.id ?? null;
+
   useEffect(() => {
-    if (!selectedEntry || !editingEntryId) {
+    if (!selectedEntryId || !selectedEntry || !editingEntryId) {
       setDraft(null);
       setOriginalDraft(null);
       setHistory([]);
@@ -36,7 +38,7 @@ export function FounderTextEditor() {
     setOriginalDraft(initialConfig);
     setHistory([initialConfig]);
     setHistoryIndex(0);
-  }, [selectedEntry, editingEntryId, getConfig]);
+  }, [selectedEntryId, editingEntryId]);
 
   const applyDraftChange = (next: Partial<ReturnType<typeof getConfig>>) => {
     if (!selectedEntry) {
