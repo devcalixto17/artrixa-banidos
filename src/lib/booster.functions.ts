@@ -122,6 +122,30 @@ export const getServerStatus = createServerFn({ method: "GET" })
             .map((entry) => entry.attributes?.name?.trim() ?? "")
             .filter(Boolean);
         }
+
+        if (!playersOnline.length) {
+          const playersListQuery = new URL("https://api.battlemetrics.com/players");
+          playersListQuery.searchParams.set("filter[servers]", serverId);
+          playersListQuery.searchParams.set("page[size]", "100");
+
+          const playersListResponse = await fetch(playersListQuery.toString(), {
+            headers: requestHeaders,
+          });
+
+          if (playersListResponse.ok) {
+            const playersListPayload = (await playersListResponse.json()) as {
+              data?: Array<{
+                attributes?: {
+                  name?: string;
+                };
+              }>;
+            };
+
+            playersOnline = (playersListPayload.data ?? [])
+              .map((entry) => entry.attributes?.name?.trim() ?? "")
+              .filter(Boolean);
+          }
+        }
       }
 
       return {
