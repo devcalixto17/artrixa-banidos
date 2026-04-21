@@ -81,6 +81,7 @@ function BoosterPage() {
   const [gameInput, setGameInput] = useState("cs");
   const [countryInput, setCountryInput] = useState<"BR" | "ES">("BR");
   const [expandedServerId, setExpandedServerId] = useState<string | null>(null);
+  const [refreshingStatuses, setRefreshingStatuses] = useState(false);
 
   const fetchServers = async () => {
     if (!supabase) {
@@ -108,73 +109,78 @@ function BoosterPage() {
   };
 
   const refreshStatuses = async (currentServers: BoosterServer[]) => {
-    const results = await Promise.allSettled(
-      currentServers.map(async (server) => {
-        let status: BoosterStatusResponse = { ok: false, message: "Falha ao consultar fonte de status" };
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-          try {
-            const attemptStatus = await getServerStatus({ data: { address: server.address, game: server.game } });
-            status = attemptStatus;
-            if (attemptStatus.ok) {
-              break;
+    setRefreshingStatuses(true);
+    try {
+      const results = await Promise.allSettled(
+        currentServers.map(async (server) => {
+          let status: BoosterStatusResponse = { ok: false, message: "Falha ao consultar fonte de status" };
+          for (let attempt = 0; attempt < 2; attempt += 1) {
+            try {
+              const attemptStatus = await getServerStatus({ data: { address: server.address, game: server.game } });
+              status = attemptStatus;
+              if (attemptStatus.ok) {
+                break;
+              }
+            } catch {
+              status = { ok: false, message: "Falha de rede ao consultar status" };
             }
-          } catch {
-            status = { ok: false, message: "Falha de rede ao consultar status" };
           }
-        }
-        return { serverId: server.id, status };
-      }),
-    );
+          return { serverId: server.id, status };
+        }),
+      );
 
-    const failures: string[] = [];
+      const failures: string[] = [];
 
-    setStatuses((prev) => {
-      const next = { ...prev };
+      setStatuses((prev) => {
+        const next = { ...prev };
 
-      results.forEach((item, index) => {
-        const server = currentServers[index];
-        if (!server) {
-          return;
-        }
+        results.forEach((item, index) => {
+          const server = currentServers[index];
+          if (!server) {
+            return;
+          }
 
-        if (item.status === "fulfilled" && item.value.status.ok) {
-          next[item.value.serverId] = item.value.status.data;
-          return;
-        }
+          if (item.status === "fulfilled" && item.value.status.ok) {
+            next[item.value.serverId] = item.value.status.data;
+            return;
+          }
 
-        if (!next[server.id]) {
-          const { ip, port } = parseAddress(server.address);
-          next[server.id] = {
-            name: server.label,
-            ip,
-            port,
-            status: "offline",
-            map: null,
-            players: 0,
-            maxPlayers: null,
-            playersOnline: [],
-            playersSource: "fallback",
-            country: null,
-            updatedAt: new Date().toISOString(),
-          };
-        }
+          if (!next[server.id]) {
+            const { ip, port } = parseAddress(server.address);
+            next[server.id] = {
+              name: server.label,
+              ip,
+              port,
+              status: "offline",
+              map: null,
+              players: 0,
+              maxPlayers: null,
+              playersOnline: [],
+              playersSource: "fallback",
+              country: null,
+              updatedAt: new Date().toISOString(),
+            };
+          }
 
-        const serverLabel = server.label;
-        if (item.status === "fulfilled") {
-          const errorMessage = item.value.status.ok ? "falha desconhecida" : item.value.status.message;
-          failures.push(`${serverLabel}: ${errorMessage}`);
-        } else {
-          failures.push(`${serverLabel}: falha de rede ao consultar status`);
-        }
+          const serverLabel = server.label;
+          if (item.status === "fulfilled") {
+            const errorMessage = item.value.status.ok ? "falha desconhecida" : item.value.status.message;
+            failures.push(`${serverLabel}: ${errorMessage}`);
+          } else {
+            failures.push(`${serverLabel}: falha de rede ao consultar status`);
+          }
+        });
+
+        return next;
       });
 
-      return next;
-    });
-
-    if (failures.length) {
-      setStatusNotice("Alguns servidores não responderam agora; exibindo status offline temporário.");
-    } else {
-      setStatusNotice(null);
+      if (failures.length) {
+        setStatusNotice("Alguns servidores não responderam agora; exibindo status offline temporário.");
+      } else {
+        setStatusNotice(null);
+      }
+    } finally {
+      setRefreshingStatuses(false);
     }
   };
 
@@ -229,26 +235,10 @@ function BoosterPage() {
 
     const interval = window.setInterval(() => {
       void refreshStatuses(servers);
-    }, 20000);
+    }, 5000);
 
     return () => window.clearInterval(interval);
   }, [servers]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const cacheBustKey = "booster-cache-bust-v1";
-    if (window.sessionStorage.getItem(cacheBustKey)) {
-      return;
-    }
-
-    window.sessionStorage.setItem(cacheBustKey, "1");
-    const nextUrl = new URL(window.location.href);
-    nextUrl.searchParams.set("_refresh", String(Date.now()));
-    window.location.replace(nextUrl.toString());
-  }, []);
 
   const handleAddServer = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -311,7 +301,17 @@ function BoosterPage() {
           <div className="text-muted-foreground">
             Total: <span className="font-semibold text-foreground">{servers.length}</span> servidores • Online: <span className="font-semibold text-foreground">{onlineCount}</span>
           </div>
-          <div className="text-xs text-muted-foreground">Status atualizado ao carregar a página</div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="action-button"
+              onClick={() => void refreshStatuses(servers)}
+              disabled={refreshingStatuses || !servers.length}
+            >
+              {refreshingStatuses ? "Atualizando..." : "Atualizar status"}
+            </button>
+            <div className="text-xs text-muted-foreground">Atualização automática em tempo real</div>
+          </div>
         </div>
 
         {statusNotice && (
