@@ -178,9 +178,22 @@ export const getServerStatus = async ({
       : null;
 
     if (serverById?.server.attributes) {
+      const liveCs = safeData.game.toLowerCase() === "cs" ? await fetchCsLiveStatus(safeData.address) : null;
+      const baseStatus = mapLiveStatus(serverById.server, safeData.address, serverById.playersOnline);
+
       return {
         ok: true,
-        data: mapLiveStatus(serverById.server, safeData.address, serverById.playersOnline),
+        data: liveCs
+          ? {
+              ...baseStatus,
+              map: liveCs.map ?? baseStatus.map,
+              players: typeof liveCs.players === "number" ? liveCs.players : baseStatus.players,
+              maxPlayers: typeof liveCs.maxPlayers === "number" ? liveCs.maxPlayers : baseStatus.maxPlayers,
+              playersOnline: liveCs.playersOnline,
+              status: liveCs.status,
+              updatedAt: liveCs.updatedAt,
+            }
+          : baseStatus,
         resolvedServerId: serverById.server.id ?? safeData.serverId ?? null,
       };
     }
@@ -299,9 +312,22 @@ export const getServerStatus = async ({
 
     const playersOnline = serverId ? (await fetchServerById(serverId, requestHeaders))?.playersOnline ?? [] : [];
 
+    const liveCs = safeData.game.toLowerCase() === "cs" ? await fetchCsLiveStatus(safeData.address) : null;
+    const baseStatus = mapLiveStatus(matchedServer, safeData.address, playersOnline);
+
     return {
       ok: true,
-      data: mapLiveStatus(matchedServer, safeData.address, playersOnline),
+      data: liveCs
+        ? {
+            ...baseStatus,
+            map: liveCs.map ?? baseStatus.map,
+            players: typeof liveCs.players === "number" ? liveCs.players : baseStatus.players,
+            maxPlayers: typeof liveCs.maxPlayers === "number" ? liveCs.maxPlayers : baseStatus.maxPlayers,
+            playersOnline: liveCs.playersOnline,
+            status: liveCs.status,
+            updatedAt: liveCs.updatedAt,
+          }
+        : baseStatus,
       resolvedServerId: serverId ?? null,
     };
   } catch {
