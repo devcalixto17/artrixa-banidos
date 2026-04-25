@@ -33,6 +33,7 @@ type BattleMetricsServer = {
     players?: number;
     maxPlayers?: number;
     status?: string;
+    queryStatus?: string;
     country?: string;
     details?: {
       map?: string;
@@ -42,14 +43,16 @@ type BattleMetricsServer = {
 
 function mapLiveStatus(server: BattleMetricsServer, fallbackName: string, playersOnline: string[]): BoosterLiveStatus {
   const first = server.attributes;
+  const normalizedStatus = String(first?.status ?? "").toLowerCase();
+  const normalizedQueryStatus = String(first?.queryStatus ?? "").toLowerCase();
+  const isExplicitOffline = ["offline", "removed", "dead"].includes(normalizedStatus);
+  const hasFreshSignal = normalizedStatus.length > 0 || normalizedQueryStatus.length > 0 || Boolean(first?.details?.map);
+
   return {
     name: first?.name ?? fallbackName,
     ip: first?.ip ?? null,
     port: typeof first?.port === "number" ? first.port : null,
-    status:
-      first?.status === "online" || (first?.status !== "online" && playersOnline.length > 0)
-        ? "online"
-        : "offline",
+    status: !isExplicitOffline && (playersOnline.length > 0 || hasFreshSignal) ? "online" : "offline",
     map: first?.details?.map ?? null,
     players:
       typeof first?.players === "number" && first.players >= 0
