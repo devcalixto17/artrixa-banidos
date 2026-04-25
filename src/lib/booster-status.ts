@@ -24,6 +24,18 @@ export type BoosterStatusResponse =
   | { ok: true; data: BoosterLiveStatus; resolvedServerId: string | null }
   | { ok: false; message: string; rateLimited?: boolean; retryAfterMs?: number };
 
+type CsLiveResponse = {
+  ok: boolean;
+  data?: {
+    map: string | null;
+    players: number | null;
+    maxPlayers: number | null;
+    playersOnline: string[];
+    status: "online" | "offline";
+    updatedAt: string;
+  };
+};
+
 type BattleMetricsServer = {
   id?: string;
   attributes?: {
@@ -118,6 +130,28 @@ function parseRetryAfterMs(payload: unknown): number | undefined {
   return Math.max(0, target - Date.now());
 }
 
+async function fetchCsLiveStatus(address: string): Promise<CsLiveResponse["data"] | null> {
+  try {
+    const response = await fetch(`/api/public/cs-live?address=${encodeURIComponent(address)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as CsLiveResponse;
+    if (!payload.ok || !payload.data) {
+      return null;
+    }
+
+    return payload.data;
+  } catch {
+    return null;
+  }
+}
+
 export const getServerStatus = async ({
   data,
 }: {
@@ -144,9 +178,22 @@ export const getServerStatus = async ({
       : null;
 
     if (serverById?.server.attributes) {
+      const liveCs = safeData.game.toLowerCase() === "cs" ? await fetchCsLiveStatus(safeData.address) : null;
+      const baseStatus = mapLiveStatus(serverById.server, safeData.address, serverById.playersOnline);
+
       return {
         ok: true,
-        data: mapLiveStatus(serverById.server, safeData.address, serverById.playersOnline),
+        data: liveCs
+          ? {
+              ...baseStatus,
+              map: liveCs.map ?? baseStatus.map,
+              players: typeof liveCs.players === "number" ? liveCs.players : baseStatus.players,
+              maxPlayers: typeof liveCs.maxPlayers === "number" ? liveCs.maxPlayers : baseStatus.maxPlayers,
+              playersOnline: liveCs.playersOnline,
+              status: liveCs.status,
+              updatedAt: liveCs.updatedAt,
+            }
+          : baseStatus,
         resolvedServerId: serverById.server.id ?? safeData.serverId ?? null,
       };
     }
@@ -265,9 +312,22 @@ export const getServerStatus = async ({
 
     const playersOnline = serverId ? (await fetchServerById(serverId, requestHeaders))?.playersOnline ?? [] : [];
 
+    const liveCs = safeData.game.toLowerCase() === "cs" ? await fetchCsLiveStatus(safeData.address) : null;
+    const baseStatus = mapLiveStatus(matchedServer, safeData.address, playersOnline);
+
     return {
       ok: true,
-      data: mapLiveStatus(matchedServer, safeData.address, playersOnline),
+      data: liveCs
+        ? {
+            ...baseStatus,
+            map: liveCs.map ?? baseStatus.map,
+            players: typeof liveCs.players === "number" ? liveCs.players : baseStatus.players,
+            maxPlayers: typeof liveCs.maxPlayers === "number" ? liveCs.maxPlayers : baseStatus.maxPlayers,
+            playersOnline: liveCs.playersOnline,
+            status: liveCs.status,
+            updatedAt: liveCs.updatedAt,
+          }
+        : baseStatus,
       resolvedServerId: serverId ?? null,
     };
   } catch {

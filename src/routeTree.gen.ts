@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as BoosterRouteImport } from './routes/booster'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicCsLiveRouteImport } from './routes/api.public.cs-live'
 
 const SuporteRoute = SuporteRouteImport.update({
   id: '/suporte',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCsLiveRoute = ApiPublicCsLiveRouteImport.update({
+  id: '/api/public/cs-live',
+  path: '/api/public/cs-live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/booster': typeof BoosterRoute
   '/suporte': typeof SuporteRoute
+  '/api/public/cs-live': typeof ApiPublicCsLiveRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/booster': typeof BoosterRoute
   '/suporte': typeof SuporteRoute
+  '/api/public/cs-live': typeof ApiPublicCsLiveRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/booster': typeof BoosterRoute
   '/suporte': typeof SuporteRoute
+  '/api/public/cs-live': typeof ApiPublicCsLiveRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/booster' | '/suporte'
+  fullPaths: '/' | '/booster' | '/suporte' | '/api/public/cs-live'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/booster' | '/suporte'
-  id: '__root__' | '/' | '/booster' | '/suporte'
+  to: '/' | '/booster' | '/suporte' | '/api/public/cs-live'
+  id: '__root__' | '/' | '/booster' | '/suporte' | '/api/public/cs-live'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BoosterRoute: typeof BoosterRoute
   SuporteRoute: typeof SuporteRoute
+  ApiPublicCsLiveRoute: typeof ApiPublicCsLiveRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cs-live': {
+      id: '/api/public/cs-live'
+      path: '/api/public/cs-live'
+      fullPath: '/api/public/cs-live'
+      preLoaderRoute: typeof ApiPublicCsLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BoosterRoute: BoosterRoute,
   SuporteRoute: SuporteRoute,
+  ApiPublicCsLiveRoute: ApiPublicCsLiveRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
