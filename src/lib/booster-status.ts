@@ -70,7 +70,10 @@ async function fetchServerById(serverId: string, headers: HeadersInit): Promise<
   server: BattleMetricsServer;
   playersOnline: string[];
 } | null> {
-  const response = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, { headers });
+  const response = await fetch(`https://api.battlemetrics.com/servers/${serverId}?include=player`, {
+    headers,
+    cache: "no-store",
+  });
   if (!response.ok) {
     return null;
   }
@@ -189,12 +192,12 @@ export const getServerStatus = async ({
       }
       query.searchParams.set("page[size]", "20");
 
-      let response = await fetch(query.toString(), { headers: requestHeaders });
+      let response = await fetch(query.toString(), { headers: requestHeaders, cache: "no-store" });
       if (response.status === 403 && attempt.includeGame) {
         const fallbackQuery = new URL("https://api.battlemetrics.com/servers");
         fallbackQuery.searchParams.set("filter[search]", attempt.search);
         fallbackQuery.searchParams.set("page[size]", "20");
-        response = await fetch(fallbackQuery.toString(), { headers: requestHeaders });
+        response = await fetch(fallbackQuery.toString(), { headers: requestHeaders, cache: "no-store" });
       }
 
       if (response.status === 429) {
