@@ -24,6 +24,18 @@ export type BoosterStatusResponse =
   | { ok: true; data: BoosterLiveStatus; resolvedServerId: string | null }
   | { ok: false; message: string; rateLimited?: boolean; retryAfterMs?: number };
 
+type CsLiveResponse = {
+  ok: boolean;
+  data?: {
+    map: string | null;
+    players: number | null;
+    maxPlayers: number | null;
+    playersOnline: string[];
+    status: "online" | "offline";
+    updatedAt: string;
+  };
+};
+
 type BattleMetricsServer = {
   id?: string;
   attributes?: {
@@ -116,6 +128,28 @@ function parseRetryAfterMs(payload: unknown): number | undefined {
   }
 
   return Math.max(0, target - Date.now());
+}
+
+async function fetchCsLiveStatus(address: string): Promise<CsLiveResponse["data"] | null> {
+  try {
+    const response = await fetch(`/api/public/cs-live?address=${encodeURIComponent(address)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as CsLiveResponse;
+    if (!payload.ok || !payload.data) {
+      return null;
+    }
+
+    return payload.data;
+  } catch {
+    return null;
+  }
 }
 
 export const getServerStatus = async ({
