@@ -15,6 +15,7 @@ export type BoosterLiveStatus = {
   players: number | null;
   maxPlayers: number | null;
   playersOnline: string[];
+  playerStats: Array<{ name: string; score: number | null; timeSeconds: number | null }>;
   playersSource: "live" | "fallback";
   country: string | null;
   updatedAt: string;
@@ -31,6 +32,7 @@ type CsLiveResponse = {
     players: number | null;
     maxPlayers: number | null;
     playersOnline: string[];
+    playerStats: Array<{ name: string; score: number | null; timeSeconds: number | null }>;
     status: "online" | "offline";
     updatedAt: string;
   };
@@ -72,6 +74,7 @@ function mapLiveStatus(server: BattleMetricsServer, fallbackName: string, player
         : playersOnline.length,
     maxPlayers: typeof first?.maxPlayers === "number" ? first.maxPlayers : null,
     playersOnline,
+    playerStats: playersOnline.map((name) => ({ name, score: null, timeSeconds: null })),
     playersSource: "live",
     country: first?.country ?? null,
     updatedAt: new Date().toISOString(),
@@ -190,6 +193,7 @@ export const getServerStatus = async ({
               players: typeof liveCs.players === "number" ? liveCs.players : baseStatus.players,
               maxPlayers: typeof liveCs.maxPlayers === "number" ? liveCs.maxPlayers : baseStatus.maxPlayers,
               playersOnline: liveCs.playersOnline,
+              playerStats: liveCs.playerStats,
               status: liveCs.status,
               updatedAt: liveCs.updatedAt,
             }
@@ -324,6 +328,7 @@ export const getServerStatus = async ({
             players: typeof liveCs.players === "number" ? liveCs.players : baseStatus.players,
             maxPlayers: typeof liveCs.maxPlayers === "number" ? liveCs.maxPlayers : baseStatus.maxPlayers,
             playersOnline: liveCs.playersOnline,
+            playerStats: liveCs.playerStats,
             status: liveCs.status,
             updatedAt: liveCs.updatedAt,
           }
