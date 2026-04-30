@@ -43,6 +43,19 @@ function normalizeCountry(value: unknown): "BR" | "ES" {
   return String(value ?? "BR").toUpperCase() === "ES" ? "ES" : "BR";
 }
 
+function formatOnlineTime(seconds: number | null): string {
+  if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0) {
+    return "-";
+  }
+
+  const total = Math.floor(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+
+  return [hours, minutes, secs].map((value) => String(value).padStart(2, "0")).join(":");
+}
+
 function mapServerRow(raw: Record<string, unknown>): BoosterServer {
   return {
     id: String(raw.id ?? crypto.randomUUID()),
@@ -409,6 +422,9 @@ function BoosterPage() {
           ) : (
             servers.map((server) => {
               const status = statuses[server.id];
+              const playerRows = status?.playerStats?.length
+                ? status.playerStats
+                : (status?.playersOnline ?? []).map((name) => ({ name, score: null, timeSeconds: null }));
               const isOnline = status?.status === "online";
               const hasLiveStatus = Boolean(status);
               const statusLabel = hasLiveStatus
@@ -515,14 +531,20 @@ function BoosterPage() {
 
                       <div className="mt-3 border-t border-border/70 pt-3">
                         <p className="mb-2 text-xs text-muted-foreground">Jogadores online</p>
-                        {status?.playersOnline?.length ? (
+                        {playerRows.length ? (
                           <ul className="overflow-hidden rounded-md border border-border/70 bg-background/40">
-                            {status.playersOnline.map((playerName: string, index: number) => (
+                            {playerRows.map((player, index: number) => (
                               <li
                                 key={`${server.id}-player-${index}`}
-                                className="border-b border-border/60 px-3 py-1.5 text-sm text-foreground last:border-b-0"
+                                className="grid grid-cols-[minmax(0,1fr)_88px_68px] items-center gap-3 border-b border-border/60 px-3 py-1.5 text-sm last:border-b-0"
                               >
-                                {playerName}
+                                <span className="truncate text-foreground">{player.name}</span>
+                                <span className="text-right text-xs text-muted-foreground" title="Tempo online">
+                                  {formatOnlineTime(player.timeSeconds)}
+                                </span>
+                                <span className="text-right text-xs font-medium text-foreground" title="Score/Pontos">
+                                  {typeof player.score === "number" ? player.score : "-"}
+                                </span>
                               </li>
                             ))}
                           </ul>
