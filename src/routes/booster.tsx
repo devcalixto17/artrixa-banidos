@@ -516,9 +516,12 @@ function BoosterPage() {
                       <div className="mt-3 border-t border-border/70 pt-3">
                         <p className="mb-2 text-xs text-muted-foreground">Jogadores online</p>
                         {status?.playersOnline?.length ? (
-                          <ul className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                          <ul className="overflow-hidden rounded-md border border-border/70 bg-background/40">
                             {status.playersOnline.map((playerName: string, index: number) => (
-                              <li key={`${server.id}-player-${index}`} className="text-sm text-foreground">
+                              <li
+                                key={`${server.id}-player-${index}`}
+                                className="border-b border-border/60 px-3 py-1.5 text-sm text-foreground last:border-b-0"
+                              >
                                 {playerName}
                               </li>
                             ))}
