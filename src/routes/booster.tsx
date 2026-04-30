@@ -422,6 +422,9 @@ function BoosterPage() {
           ) : (
             servers.map((server) => {
               const status = statuses[server.id];
+              const playerRows = status?.playerStats?.length
+                ? status.playerStats
+                : (status?.playersOnline ?? []).map((name) => ({ name, score: null, timeSeconds: null }));
               const isOnline = status?.status === "online";
               const hasLiveStatus = Boolean(status);
               const statusLabel = hasLiveStatus
@@ -528,9 +531,9 @@ function BoosterPage() {
 
                       <div className="mt-3 border-t border-border/70 pt-3">
                         <p className="mb-2 text-xs text-muted-foreground">Jogadores online</p>
-                        {status?.playersOnline?.length ? (
+                        {playerRows.length ? (
                           <ul className="overflow-hidden rounded-md border border-border/70 bg-background/40">
-                            {status.playerStats.map((player, index: number) => (
+                            {playerRows.map((player, index: number) => (
                               <li
                                 key={`${server.id}-player-${index}`}
                                 className="grid grid-cols-[minmax(0,1fr)_88px_68px] items-center gap-3 border-b border-border/60 px-3 py-1.5 text-sm last:border-b-0"
