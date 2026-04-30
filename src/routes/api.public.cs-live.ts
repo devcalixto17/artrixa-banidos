@@ -3,6 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 type GameTrackerPlayer = {
   player?: {
     name?: string;
+    score?: number;
+    time?: number;
   };
 };
 
@@ -53,9 +55,25 @@ export const Route = createFileRoute("/api/public/cs-live")({
           }
 
           const payload = (await upstream.json()) as GameTrackerResponse;
-          const playersOnline = (payload.players_list ?? [])
-            .map((entry) => entry.player?.name?.trim() ?? "")
-            .filter(Boolean);
+          const playerStats = (payload.players_list ?? [])
+            .map((entry) => {
+              const name = entry.player?.name?.trim() ?? "";
+              if (!name) {
+                return null;
+              }
+
+              const score = Number(entry.player?.score);
+              const timeSeconds = Number(entry.player?.time);
+
+              return {
+                name,
+                score: Number.isFinite(score) ? score : null,
+                timeSeconds: Number.isFinite(timeSeconds) ? timeSeconds : null,
+              };
+            })
+            .filter((entry): entry is { name: string; score: number | null; timeSeconds: number | null } => Boolean(entry));
+
+          const playersOnline = playerStats.map((entry) => entry.name);
 
           const playersFromList = playersOnline.length;
           const playersFromField = Number(payload.players);
@@ -68,6 +86,7 @@ export const Route = createFileRoute("/api/public/cs-live")({
               players: Number.isFinite(playersFromField) ? playersFromField : playersFromList,
               maxPlayers: Number.isFinite(maxPlayers) ? maxPlayers : null,
               playersOnline,
+              playerStats,
               status: payload.status === "1" || playersFromList > 0 ? "online" : "offline",
               updatedAt: new Date().toISOString(),
             },
