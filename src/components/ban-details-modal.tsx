@@ -29,9 +29,9 @@ function formatDate(value: string | null) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-border/80 px-4 py-3 text-base text-foreground">
-      <span className="mr-2 text-sm font-semibold text-muted-foreground">{label}:</span>
-      <span className="font-medium text-foreground">{value}</span>
+    <div className="border-b border-border/80 px-4 py-3 text-lg text-foreground">
+      <span className="mr-2 text-base font-bold text-muted-foreground">{label}:</span>
+      <span className="font-semibold text-foreground">{value}</span>
     </div>
   );
 }
