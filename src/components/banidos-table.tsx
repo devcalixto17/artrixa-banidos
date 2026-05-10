@@ -157,14 +157,14 @@ export function BanidosTable() {
               entry={{ id: "banidos-list-title", label: "Banidos • título da lista", defaultText: "Lista de Banidos" }}
             />
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base font-medium text-muted-foreground md:text-lg">
             <EditableText
               as="span"
               entry={{
                 id: "banidos-list-subtitle",
                 label: "Banidos • subtítulo da lista",
                 defaultText: "Atualização automática em tempo real + refresh a cada 15s",
-                defaultConfig: { uppercase: false, font: "Exo 2", size: 14, weight: "500" },
+                defaultConfig: { uppercase: false, font: "Rajdhani", size: 18, weight: "700" },
               }}
             />
           </p>
@@ -249,17 +249,17 @@ export function BanidosTable() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-[240px] flex-1">
                   <h3 className="text-base font-bold uppercase text-foreground">{ban.player_name}</h3>
-                  <p className="text-xs text-muted-foreground">ID do ban: #{ban.id}</p>
+                  <p className="text-sm font-medium text-muted-foreground">ID do ban: #{ban.id}</p>
                 </div>
 
                 <div className="min-w-[220px] flex-1 text-sm">
-                  <p className="text-xs text-muted-foreground">Steam ID</p>
-                  <p className="font-medium text-foreground">{ban.steam_id || "-"}</p>
+                  <p className="text-sm font-semibold text-muted-foreground">Steam ID</p>
+                  <p className="text-base font-semibold text-foreground">{ban.steam_id || "-"}</p>
                 </div>
 
                 <div className="min-w-[220px] flex-1 text-sm">
-                  <p className="text-xs text-muted-foreground">Servidor</p>
-                  <p className="font-medium text-foreground">{ban.server || "-"}</p>
+                  <p className="text-sm font-semibold text-muted-foreground">Servidor</p>
+                  <p className="text-base font-semibold text-foreground">{ban.server || "-"}</p>
                 </div>
 
                 <button type="button" className="action-button" onClick={() => setSelected(ban)}>

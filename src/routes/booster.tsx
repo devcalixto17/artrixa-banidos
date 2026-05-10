@@ -504,45 +504,45 @@ function BoosterPage() {
 
                   {isExpanded && (
                     <>
-                      <div className="mt-3 grid gap-2 border-t border-border/70 pt-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="mt-3 grid gap-2 border-t border-border/70 pt-3 text-base sm:grid-cols-2 lg:grid-cols-4">
                         <div className="border-b border-border/70 pb-2 sm:border-b-0 sm:pb-0">
-                          <p className="text-xs text-muted-foreground">Nome real</p>
-                          <p className="font-medium text-foreground">{status?.name ?? "Aguardando"}</p>
+                          <p className="text-sm font-semibold text-muted-foreground">Nome real</p>
+                          <p className="text-lg font-bold text-foreground">{status?.name ?? "Aguardando"}</p>
                         </div>
                         <div className="border-b border-border/70 pb-2 sm:border-b-0 sm:pb-0">
-                          <p className="text-xs text-muted-foreground">Mapa</p>
-                          <p className="font-medium text-foreground">{status?.map ?? "-"}</p>
+                          <p className="text-sm font-semibold text-muted-foreground">Mapa</p>
+                          <p className="text-lg font-bold text-foreground">{status?.map ?? "-"}</p>
                         </div>
                         <div className="border-b border-border/70 pb-2 lg:border-b-0 lg:pb-0">
-                          <p className="text-xs text-muted-foreground">Jogadores</p>
-                          <p className="font-medium text-foreground">
+                          <p className="text-sm font-semibold text-muted-foreground">Jogadores</p>
+                          <p className="text-lg font-bold text-foreground">
                             {typeof status?.players === "number" && typeof status.maxPlayers === "number"
                               ? `${status.players}/${status.maxPlayers}`
                               : "-"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Última atualização</p>
-                          <p className="font-medium text-foreground">
+                          <p className="text-sm font-semibold text-muted-foreground">Última atualização</p>
+                          <p className="text-lg font-bold text-foreground">
                             {status?.updatedAt ? new Date(status.updatedAt).toLocaleTimeString("pt-BR") : "-"}
                           </p>
                         </div>
                       </div>
 
                       <div className="mt-3 border-t border-border/70 pt-3">
-                        <p className="mb-2 text-xs text-muted-foreground">Jogadores online</p>
+                        <p className="mb-2 text-sm font-semibold text-muted-foreground">Jogadores online</p>
                         {playerRows.length ? (
                           <ul className="overflow-hidden rounded-md border border-border/70 bg-background/40">
                             {playerRows.map((player, index: number) => (
                               <li
                                 key={`${server.id}-player-${index}`}
-                                className="grid grid-cols-[minmax(0,1fr)_88px_68px] items-center gap-3 border-b border-border/60 px-3 py-1.5 text-sm last:border-b-0"
+                                className="grid grid-cols-[minmax(0,1fr)_96px_74px] items-center gap-3 border-b border-border/60 px-3 py-2 text-base last:border-b-0"
                               >
-                                <span className="truncate text-foreground">{player.name}</span>
-                                <span className="text-right text-xs text-muted-foreground" title="Tempo online">
+                                <span className="truncate font-semibold text-foreground">{player.name}</span>
+                                <span className="text-right text-sm font-medium text-muted-foreground" title="Tempo online">
                                   {formatOnlineTime(player.timeSeconds)}
                                 </span>
-                                <span className="text-right text-xs font-medium text-foreground" title="Score/Pontos">
+                                <span className="text-right text-sm font-bold text-foreground" title="Score/Pontos">
                                   {typeof player.score === "number" ? player.score : "-"}
                                 </span>
                               </li>
