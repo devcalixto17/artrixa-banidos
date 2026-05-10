@@ -31,7 +31,7 @@ function parseAddress(address: string) {
 export const Route = createFileRoute("/api/public/cs-live")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async ({ request }: { request: Request }) => {
         try {
           const url = new URL(request.url);
           const address = (url.searchParams.get("address") ?? "").trim();
@@ -97,4 +97,4 @@ export const Route = createFileRoute("/api/public/cs-live")({
       },
     },
   },
-});
+} as any);
