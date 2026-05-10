@@ -333,15 +333,15 @@ function BoosterPage() {
   return (
     <SiteShell pageKey="booster" title="BOOSTER" subtitle="LGSL-style: servidores monitorados em tempo real para CS 1.6">
       <section className="panel space-y-5 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 pb-4 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 pb-4 text-base font-semibold md:text-lg">
           <div className="text-muted-foreground">
             Total: <span className="font-semibold text-foreground">{servers.length}</span> servidores • Online: <span className="font-semibold text-foreground">{onlineCount}</span>
           </div>
-          <div className="text-xs text-muted-foreground">Atualização automática a cada 5s</div>
+          <div className="text-sm font-medium text-muted-foreground md:text-base">Atualização automática a cada 5s</div>
         </div>
 
         {statusNotice && (
-          <div className="rounded-md border border-border/70 bg-background/60 px-3 py-2 text-xs text-muted-foreground">
+          <div className="rounded-md border border-border/70 bg-background/60 px-3 py-2 text-sm font-medium text-muted-foreground md:text-base">
             {statusNotice}
           </div>
         )}
@@ -463,8 +463,8 @@ function BoosterPage() {
                     >
                       <img src={country.image} alt={country.label} className="h-4 w-6 rounded-[2px] border border-border object-cover" loading="lazy" />
                       <div>
-                        <h2 className="text-base font-bold uppercase tracking-wide text-foreground">{server.label}</h2>
-                        <p className="text-xs text-muted-foreground">{server.address}</p>
+                        <h2 className="text-xl font-extrabold uppercase tracking-wide text-foreground">{server.label}</h2>
+                        <p className="text-sm font-medium text-muted-foreground md:text-base">{server.address}</p>
                       </div>
                     </button>
                     <div className="flex items-center gap-2">

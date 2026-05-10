@@ -35,12 +35,12 @@ function Index() {
       subtitle="Painel oficial de banimentos com consulta rápida para servidores de Counter-Strike 1.6"
     >
       {loading ? (
-        <section className="panel p-5 text-sm text-muted-foreground">Carregando autenticação...</section>
+        <section className="panel p-5 text-base font-medium text-muted-foreground">Carregando autenticação...</section>
       ) : !user ? (
         <AuthCard />
       ) : (
         <>
-          <section className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-xs text-muted-foreground">
+          <section className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-sm font-medium text-muted-foreground md:text-base">
             <span>
               <EditableText
                 as="span"
@@ -48,7 +48,7 @@ function Index() {
                   id: "index-logged-label",
                   label: "Barra de usuário • prefixo",
                   defaultText: "Logado como",
-                  defaultConfig: { font: "Exo 2", size: 14, weight: "500", uppercase: false },
+                  defaultConfig: { font: "Rajdhani", size: 18, weight: "700", uppercase: false },
                 }}
               />{" "}
               <strong className="text-foreground">{displayName || user.email || "usuário"}</strong> ({roles.join(", ") || "sem cargo"})
@@ -60,7 +60,7 @@ function Index() {
                   id: "index-signout-button",
                   label: "Barra de usuário • botão sair",
                   defaultText: "Sair",
-                  defaultConfig: { font: "Orbitron", size: 14, weight: "700", uppercase: true },
+                  defaultConfig: { font: "Teko", size: 20, weight: "800", uppercase: true },
                 }}
               />
             </button>

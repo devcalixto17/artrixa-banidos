@@ -27,22 +27,22 @@ function SuportePage() {
       subtitle="Nossa equipe está disponível para ajudar com revisões de ban, denúncias e dúvidas gerais"
     >
       <section className="panel space-y-4 p-5">
-        <h2 className="text-lg font-bold uppercase tracking-wide">Como falar com o suporte</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-2xl font-extrabold uppercase tracking-wide">Como falar com o suporte</h2>
+        <p className="text-base font-medium text-muted-foreground md:text-lg">
           Para um atendimento mais rápido, envie seu Steam ID, horário do ocorrido e uma descrição detalhada.
         </p>
         <div className="grid gap-3 sm:grid-cols-3">
           <article className="rounded-lg border border-border bg-muted/40 p-4">
-            <h3 className="text-sm font-semibold uppercase">Discord</h3>
-            <p className="mt-1 text-xs text-muted-foreground">discord.gg/seu-servidor</p>
+            <h3 className="text-base font-extrabold uppercase">Discord</h3>
+            <p className="mt-1 text-sm font-medium text-muted-foreground md:text-base">discord.gg/seu-servidor</p>
           </article>
           <article className="rounded-lg border border-border bg-muted/40 p-4">
-            <h3 className="text-sm font-semibold uppercase">E-mail</h3>
-            <p className="mt-1 text-xs text-muted-foreground">suporte@seuservidor.com</p>
+            <h3 className="text-base font-extrabold uppercase">E-mail</h3>
+            <p className="mt-1 text-sm font-medium text-muted-foreground md:text-base">suporte@seuservidor.com</p>
           </article>
           <article className="rounded-lg border border-border bg-muted/40 p-4">
-            <h3 className="text-sm font-semibold uppercase">Horário</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Seg a Sáb, 10h às 22h</p>
+            <h3 className="text-base font-extrabold uppercase">Horário</h3>
+            <p className="mt-1 text-sm font-medium text-muted-foreground md:text-base">Seg a Sáb, 10h às 22h</p>
           </article>
         </div>
       </section>

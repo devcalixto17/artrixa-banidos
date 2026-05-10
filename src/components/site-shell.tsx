@@ -24,8 +24,8 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
                 label: `${title} • título da página`,
                 defaultText: title,
                 defaultConfig: {
-                  font: "Orbitron",
-                  size: 32,
+                  font: "Teko",
+                  size: 42,
                   weight: "800",
                   uppercase: true,
                   color: "#f4f5ff",
@@ -40,11 +40,11 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
                 label: `${title} • subtítulo da página`,
                 defaultText: subtitle,
                 defaultConfig: {
-                  font: "Exo 2",
-                  size: 14,
-                  weight: "500",
+                  font: "Rajdhani",
+                  size: 18,
+                  weight: "700",
                   uppercase: false,
-                  color: "#b9b6d2",
+                  color: "#d8d6ef",
                 },
               }}
             />
@@ -62,7 +62,7 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
                   id: "header-nav-banidos",
                   label: "Menu • Banidos",
                   defaultText: "Banidos",
-                  defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
+                  defaultConfig: { font: "Teko", size: 26, weight: "800", uppercase: true },
                 }}
               />
             </Link>
@@ -77,7 +77,7 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
                   id: "header-nav-suporte",
                   label: "Menu • Suporte",
                   defaultText: "Suporte",
-                  defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
+                  defaultConfig: { font: "Teko", size: 26, weight: "800", uppercase: true },
                 }}
               />
             </Link>
@@ -92,7 +92,7 @@ export function SiteShell({ title, subtitle, pageKey, children }: SiteShellProps
                   id: "header-nav-booster",
                   label: "Menu • Booster",
                   defaultText: "Booster",
-                  defaultConfig: { font: "Orbitron", size: 20, weight: "700", uppercase: true },
+                  defaultConfig: { font: "Teko", size: 26, weight: "800", uppercase: true },
                 }}
               />
             </Link>
